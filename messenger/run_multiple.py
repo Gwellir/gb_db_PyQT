@@ -17,7 +17,7 @@ while True:
             except ValueError:
                 print('Please enter a valid number!')
                 continue
-        p_list.append(Popen(f'python server.py', creationflags=CREATE_NEW_CONSOLE))
+        p_list.append(Popen(f'python server.py -a 127.0.0.1 -p 7777', creationflags=CREATE_NEW_CONSOLE))
         sleep(1)
         for i in range(amount):
             sleep(1 / amount)

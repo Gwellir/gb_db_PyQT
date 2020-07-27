@@ -36,6 +36,7 @@ class Log:
 
     @staticmethod
     def _inspect_caller():
+        """Gets caller file and called function names from frame inspecting."""
         prev_frame = inspect.currentframe().f_back.f_back
         (file_name, line_number, function_name, lines, index) = inspect.getframeinfo(prev_frame)
 

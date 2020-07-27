@@ -57,6 +57,7 @@ class JIMFields:
         JOIN = 'join'
         MESSAGE = 'msg'
         PROBE = 'probe'
+        EXIT = 'exit'
 
     class UserData:
         ACCOUNT_NAME = 'account_name'
