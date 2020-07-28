@@ -4,6 +4,7 @@ from collections import defaultdict
 from json import JSONDecodeError
 from socket import SOCK_STREAM, socket, AF_INET
 from datetime import datetime
+from threading import Thread
 
 from messenger.common.constants import (ServerCodes, SERVER_PORT, CODE_MESSAGES, JIMFields, MIN_PORT_NUMBER,
                                         MAX_PORT_NUMBER, MAX_CLIENTS, TIMEOUT_INTERVAL)
@@ -13,10 +14,12 @@ from messenger.log.server_log_config import SERVER_LOG
 from messenger.common.decorators import Log
 from messenger.descr import PortNumber, IPAddress
 from messenger.meta import ServerWatcher
+from messenger.server_database import ServerBase
 
 
 class User:
     """User representation (to be moved into SQLAlchemy format)."""
+
     def __init__(self, client, address, username, status, last_online):
         self.client = client
         self.address = address
@@ -30,20 +33,22 @@ class User:
                f'\nlast online: {self.last_online.strftime("%H:%M:%S")} with status "{self.status}"'
 
 
-class Server(metaclass=ServerWatcher):
-    """Server class, coordinates user connections, identification and message exchange."""
+class Server(Thread, metaclass=ServerWatcher):
+    # """Server class, coordinates user connections, identification and message exchange."""
 
     _address = IPAddress()
     _port = PortNumber()
 
-    def __init__(self, server_address, server_port):
+    def __init__(self, server_address, server_port, db):
         self._address = server_address
         self._port = server_port
         self._sock = None
 
+        self._db = db
         self._clients = []
 
         self._users = {}
+        super().__init__()
 
     def init_socket(self):
         """Prepares a socket for incoming connections."""
@@ -58,7 +63,7 @@ class Server(metaclass=ServerWatcher):
 
         SERVER_LOG.info(f'Listening on "{self._address}":{self._port}')
 
-    def main_loop(self):
+    def run(self):
         """Main cycle, takes new connections, processes closed ones and operates data exchange for existing clients."""
         self.init_socket()
 
@@ -75,6 +80,7 @@ class Server(metaclass=ServerWatcher):
                         user = User(client, addr, presence_obj[JIMFields.USER][JIMFields.UserData.ACCOUNT_NAME],
                                     presence_obj[JIMFields.USER][JIMFields.UserData.STATUS],
                                     datetime.fromtimestamp(presence_obj[JIMFields.TIME]))
+                        self._db.on_login(user.username, user.address[0], user.address[1])
                         self.send_response(presence_obj, client)
                         self._users[client] = user
                         self._clients.append(client)
@@ -135,6 +141,7 @@ class Server(metaclass=ServerWatcher):
                     elif data[JIMFields.ACTION] == JIMFields.ActionData.EXIT:
                         print(f'Client {self._users[sock].username} has disconnected.')
                         SERVER_LOG.info(f'Client {self._users[sock].username} has disconnected.')
+                        self._db.on_logout(self._users[sock].username)
                         self._users.pop(sock)
                         w_clients.remove(sock)
                 except KeyError as ex:
@@ -143,6 +150,7 @@ class Server(metaclass=ServerWatcher):
             except:
                 print(f'client {sock.fileno()} {sock.getpeername()} disconnected')
                 SERVER_LOG.info(f'Connection with {sock.getpeername()} was reset')
+                self._db.on_logout(self._users[sock].username)
                 self._users.pop(sock)
                 w_clients.remove(sock)
 
@@ -159,6 +167,7 @@ class Server(metaclass=ServerWatcher):
                 except:
                     print(f'client {sock.fileno()} {sock.getpeername()} disconnected')
                     SERVER_LOG.info(f'Connection with {sock.getpeername()} was reset')
+                    self._db.on_logout(self._users[sock].username)
                     sock.close()
                     self._users.pop(self._users[sock])
 
@@ -248,8 +257,40 @@ class Server(metaclass=ServerWatcher):
         return settings.address, settings.port
 
 
+def print_help():
+    print('Commands list:')
+    print('users - shows the list of known users')
+    print('active - shows the list of active users')
+    print('history - shows user login history')
+    print('exit - stop the server')
+    print('help - show this help message')
+
+
 if __name__ == '__main__':
     address, port = Server.check_settings(sys.argv[1:])
-    server = Server(address, port)
+    db = ServerBase()
+    server = Server(address, port, db)
+    server.daemon = True
+    server.start()
 
-    server.main_loop()
+    print_help()
+
+    while True:
+        command = input('Input a command: ')
+        if command == 'help':
+            print_help()
+        elif command == 'exit':
+            break
+        elif command == 'users':
+            for user in sorted(db.users_list()):
+                print(f'User: {user[0]}, last login: {user[1]}')
+        elif command == 'active':
+            for user in sorted(db.active_users_list()):
+                print(f'User {user[0]}, address: {user[1]}:{user[2]}, login time: {user[3]}')
+        elif command == 'history':
+            name = input('Input a username or simply press <Enter> to show all entries: ')
+            for user in sorted(db.login_history(name)):
+                print(f'User: {user[0]}, login time: {user[1]}. Address: {user[2]}:{user[3]}')
+        else:
+            print('Unknown command.')
+

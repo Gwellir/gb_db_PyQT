@@ -2,6 +2,7 @@ from enum import Enum
 
 SERVER_ADDRESS = 'localhost'
 SERVER_PORT = 7777
+SERVER_DB_FILE = 'sqlite:///db/server_base.db3'
 ENCODING = 'utf-8'
 MAX_DATA_LENGTH = 1024
 MIN_PORT_NUMBER = 1024

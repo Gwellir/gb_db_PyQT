@@ -141,6 +141,8 @@ def parse_message(message_obj):
 
     Placeholder for future logic
     """
+    if not message_obj:
+        return None, None
     key_list = message_obj.keys()
     sender = 'SERVER'
     info = None

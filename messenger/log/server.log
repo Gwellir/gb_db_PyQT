@@ -137,3 +137,287 @@
 2020-07-28 00:27:52,354 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9551)>, <Logger server (DEBUG)>), {}
 2020-07-28 00:27:52,354 INFO     [server] <- Received message from ('127.0.0.1', 9551): {'action': 'exit', 'time': 1595885272, 'user': {'account_name': 'user1'}}
 2020-07-28 00:27:52,355 INFO     [server] Client user1 has disconnected.
+2020-07-28 13:30:31,349 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:30:31,350 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:30:31,418 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:31:09,622 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:31:09,623 INFO     [server] <- Received message from ('127.0.0.1', 9661): {'action': 'presence', 'time': 1595932269, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:31:09,624 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595932269, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:31:09,658 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x040FFEE0>, {'action': 'presence', 'time': 1595932269, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>), {}
+2020-07-28 13:31:09,659 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595932269, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:31:09,659 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:31:09,659 DEBUG    [server] Formed response: {'response': 200, 'time': 1595932269, 'alert': 'OK'}
+2020-07-28 13:31:09,660 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595932269, 'alert': 'OK'}, <socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:31:09,660 INFO     [server] -> Sent message to ('127.0.0.1', 9661): {'response': 200, 'time': 1595932269, 'alert': 'OK'}
+2020-07-28 13:31:09,660 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 9661)
+2020-07-28 13:31:33,571 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:31:33,572 INFO     [server] <- Received message from ('127.0.0.1', 9661): {'action': 'msg', 'time': 1595932293, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:31:33,572 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595932293, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:31:33,572 INFO     [server] -> Sent message to ('127.0.0.1', 9661): {'action': 'msg', 'time': 1595932293, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:31:37,391 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=836, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9661)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:31:37,392 INFO     [server] <- Received message from ('127.0.0.1', 9661): {'action': 'exit', 'time': 1595932297, 'user': {'account_name': 'Guest'}}
+2020-07-28 13:31:37,392 INFO     [server] Client Guest has disconnected.
+2020-07-28 13:32:37,896 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:32:37,896 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:32:37,932 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:32:40,531 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=800, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9743)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:32:40,532 INFO     [server] <- Received message from ('127.0.0.1', 9743): {'action': 'presence', 'time': 1595932360, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:32:40,533 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595932360, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:32:40,550 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03EBFEE0>, {'action': 'presence', 'time': 1595932360, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=800, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9743)>), {}
+2020-07-28 13:32:40,551 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595932360, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:32:40,552 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:32:40,552 DEBUG    [server] Formed response: {'response': 200, 'time': 1595932360, 'alert': 'OK'}
+2020-07-28 13:32:40,552 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595932360, 'alert': 'OK'}, <socket.socket fd=800, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9743)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:32:40,553 INFO     [server] -> Sent message to ('127.0.0.1', 9743): {'response': 200, 'time': 1595932360, 'alert': 'OK'}
+2020-07-28 13:32:40,553 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 9743)
+2020-07-28 13:41:54,473 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=800, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 9743)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:41:54,473 INFO     [server] <- Received message from ('127.0.0.1', 9743): {'action': 'exit', 'time': 1595932914, 'user': {'account_name': 'Guest'}}
+2020-07-28 13:41:54,474 INFO     [server] Client Guest has disconnected.
+2020-07-28 13:42:18,247 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=728, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10300)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:42:18,247 INFO     [server] <- Received message from ('127.0.0.1', 10300): {'action': 'presence', 'time': 1595932938, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:42:18,248 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595932938, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:42:18,264 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03EBFEE0>, {'action': 'presence', 'time': 1595932938, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=728, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10300)>), {}
+2020-07-28 13:42:18,265 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595932938, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:42:18,265 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:42:18,265 DEBUG    [server] Formed response: {'response': 200, 'time': 1595932938, 'alert': 'OK'}
+2020-07-28 13:42:18,266 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595932938, 'alert': 'OK'}, <socket.socket fd=728, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10300)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:42:18,266 INFO     [server] -> Sent message to ('127.0.0.1', 10300): {'response': 200, 'time': 1595932938, 'alert': 'OK'}
+2020-07-28 13:42:18,266 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 10300)
+2020-07-28 13:42:22,888 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=728, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10300)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:42:22,889 INFO     [server] <- Received message from ('127.0.0.1', 10300): {'action': 'msg', 'time': 1595932942, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:42:22,889 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595932942, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=728, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10300)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:42:22,889 INFO     [server] -> Sent message to ('127.0.0.1', 10300): {'action': 'msg', 'time': 1595932942, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:46:10,739 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:46:10,739 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:46:10,775 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:46:17,620 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=816, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10514)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:46:17,620 INFO     [server] <- Received message from ('127.0.0.1', 10514): {'action': 'presence', 'time': 1595933177, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:46:17,621 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933177, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:46:17,640 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x036F23E8>, {'action': 'presence', 'time': 1595933177, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=816, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10514)>), {}
+2020-07-28 13:46:17,641 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595933177, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:46:17,641 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:46:17,641 DEBUG    [server] Formed response: {'response': 200, 'time': 1595933177, 'alert': 'OK'}
+2020-07-28 13:46:17,642 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595933177, 'alert': 'OK'}, <socket.socket fd=816, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10514)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:46:17,642 INFO     [server] -> Sent message to ('127.0.0.1', 10514): {'response': 200, 'time': 1595933177, 'alert': 'OK'}
+2020-07-28 13:46:17,642 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 10514)
+2020-07-28 13:46:21,059 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=816, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10514)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:46:21,059 INFO     [server] <- Received message from ('127.0.0.1', 10514): {'action': 'msg', 'time': 1595933180, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:46:21,061 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595933180, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=816, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10514)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:46:21,061 INFO     [server] -> Sent message to ('127.0.0.1', 10514): {'action': 'msg', 'time': 1595933180, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:47:25,218 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:47:25,219 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:47:25,253 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:47:30,512 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=556, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10573)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:47:30,513 INFO     [server] <- Received message from ('127.0.0.1', 10573): {'action': 'presence', 'time': 1595933250, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:47:30,513 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933250, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:47:30,530 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03DD23E8>, {'action': 'presence', 'time': 1595933250, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=556, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10573)>), {}
+2020-07-28 13:47:30,531 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595933250, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:47:30,531 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:47:30,531 DEBUG    [server] Formed response: {'response': 200, 'time': 1595933250, 'alert': 'OK'}
+2020-07-28 13:47:30,532 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595933250, 'alert': 'OK'}, <socket.socket fd=556, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10573)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:47:30,533 INFO     [server] -> Sent message to ('127.0.0.1', 10573): {'response': 200, 'time': 1595933250, 'alert': 'OK'}
+2020-07-28 13:47:30,533 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 10573)
+2020-07-28 13:47:37,567 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=556, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10573)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:47:37,567 INFO     [server] <- Received message from ('127.0.0.1', 10573): {'action': 'msg', 'time': 1595933257, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:47:37,569 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595933257, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=556, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10573)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:47:37,569 INFO     [server] -> Sent message to ('127.0.0.1', 10573): {'action': 'msg', 'time': 1595933257, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:49:45,270 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:49:45,271 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:49:45,306 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:51:11,459 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10752)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:51:11,459 INFO     [server] <- Received message from ('127.0.0.1', 10752): {'action': 'presence', 'time': 1595933471, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:51:11,460 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933471, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:51:19,828 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:51:19,829 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:51:19,864 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:51:23,823 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=756, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10771)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:51:23,824 INFO     [server] <- Received message from ('127.0.0.1', 10771): {'action': 'presence', 'time': 1595933483, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:51:23,824 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933483, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:52:52,607 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:52:52,608 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:52:52,644 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:52:55,897 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:52:55,897 INFO     [server] <- Received message from ('127.0.0.1', 10852): {'action': 'presence', 'time': 1595933575, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:52:55,898 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933575, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:52:55,914 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03D223E8>, {'action': 'presence', 'time': 1595933575, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>), {}
+2020-07-28 13:52:55,915 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595933575, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:52:55,915 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:52:55,916 DEBUG    [server] Formed response: {'response': 200, 'time': 1595933575, 'alert': 'OK'}
+2020-07-28 13:52:55,916 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595933575, 'alert': 'OK'}, <socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:52:55,916 INFO     [server] -> Sent message to ('127.0.0.1', 10852): {'response': 200, 'time': 1595933575, 'alert': 'OK'}
+2020-07-28 13:52:55,916 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 10852)
+2020-07-28 13:52:59,131 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:52:59,132 INFO     [server] <- Received message from ('127.0.0.1', 10852): {'action': 'msg', 'time': 1595933578, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:52:59,132 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595933578, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:52:59,132 INFO     [server] -> Sent message to ('127.0.0.1', 10852): {'action': 'msg', 'time': 1595933578, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:53:45,549 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=1028, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10852)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:53:45,550 INFO     [server] <- Received message from ('127.0.0.1', 10852): {'action': 'exit', 'time': 1595933625, 'user': {'account_name': 'Guest'}}
+2020-07-28 13:53:45,550 INFO     [server] Client Guest has disconnected.
+2020-07-28 13:53:55,104 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:53:55,105 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:53:55,170 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:53:57,811 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:53:57,812 INFO     [server] <- Received message from ('127.0.0.1', 10901): {'action': 'presence', 'time': 1595933637, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:53:57,813 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933637, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:53:57,841 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03F1FEE0>, {'action': 'presence', 'time': 1595933637, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>), {}
+2020-07-28 13:53:57,841 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595933637, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:53:57,842 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:53:57,842 DEBUG    [server] Formed response: {'response': 200, 'time': 1595933637, 'alert': 'OK'}
+2020-07-28 13:53:57,842 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595933637, 'alert': 'OK'}, <socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:53:57,842 INFO     [server] -> Sent message to ('127.0.0.1', 10901): {'response': 200, 'time': 1595933637, 'alert': 'OK'}
+2020-07-28 13:53:57,843 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 10901)
+2020-07-28 13:54:02,264 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:54:02,265 INFO     [server] <- Received message from ('127.0.0.1', 10901): {'action': 'msg', 'time': 1595933642, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:54:02,265 DEBUG    [server] function "send_message" called from "write_responses", params = ({'action': 'msg', 'time': 1595933642, 'to': '#test', 'from': 'Guest', 'message': 'test'}, <socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:54:02,266 INFO     [server] -> Sent message to ('127.0.0.1', 10901): {'action': 'msg', 'time': 1595933642, 'to': '#test', 'from': 'Guest', 'message': 'test'}
+2020-07-28 13:54:42,868 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=852, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 10901)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:54:42,869 INFO     [server] <- Received message from ('127.0.0.1', 10901): {'action': 'exit', 'time': 1595933682, 'user': {'account_name': 'Guest'}}
+2020-07-28 13:54:42,869 INFO     [server] Client Guest has disconnected.
+2020-07-28 13:56:41,884 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:56:41,885 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:56:41,922 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:56:43,834 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=632, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11034)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:56:43,834 INFO     [server] <- Received message from ('127.0.0.1', 11034): {'action': 'presence', 'time': 1595933803, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:56:43,835 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933803, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:56:59,455 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:56:59,456 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:57:20,075 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:57:20,076 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:57:28,717 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:57:28,718 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 13:57:28,786 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 13:57:32,001 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11076)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:57:32,002 INFO     [server] <- Received message from ('127.0.0.1', 11076): {'action': 'presence', 'time': 1595933852, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 13:57:32,002 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595933852, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:57:32,031 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03AB23E8>, {'action': 'presence', 'time': 1595933852, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11076)>), {}
+2020-07-28 13:57:32,032 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595933852, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 13:57:32,032 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 13:57:32,032 DEBUG    [server] Formed response: {'response': 200, 'time': 1595933852, 'alert': 'OK'}
+2020-07-28 13:57:32,033 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595933852, 'alert': 'OK'}, <socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11076)>, <Logger server (DEBUG)>), {}
+2020-07-28 13:57:32,033 INFO     [server] -> Sent message to ('127.0.0.1', 11076): {'response': 200, 'time': 1595933852, 'alert': 'OK'}
+2020-07-28 13:57:32,033 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 11076)
+2020-07-28 14:01:13,871 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11076)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:01:13,871 ERROR    [server] function "receive_message" raised an exception "ConnectionResetError" (10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)
+2020-07-28 14:01:13,872 INFO     [server] Connection with ('127.0.0.1', 11076) was reset
+2020-07-28 14:01:23,790 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:01:23,791 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:01:23,866 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:01:26,075 DEBUG    [server] function "receive_message" called from "main_loop", params = (<socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11290)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:01:26,075 INFO     [server] <- Received message from ('127.0.0.1', 11290): {'action': 'presence', 'time': 1595934086, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}
+2020-07-28 14:01:26,076 DEBUG    [server] function "check_presence" called from "main_loop", params = ({'action': 'presence', 'time': 1595934086, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 14:01:26,102 DEBUG    [server] function "send_response" called from "main_loop", params = (<__main__.Server object at 0x03BD23E8>, {'action': 'presence', 'time': 1595934086, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}}, <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11290)>), {}
+2020-07-28 14:01:26,103 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595934086, 'type': 'status', 'user': {'account_name': 'Guest', 'status': 'online'}},), {}
+2020-07-28 14:01:26,103 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:01:26,103 DEBUG    [server] Formed response: {'response': 200, 'time': 1595934086, 'alert': 'OK'}
+2020-07-28 14:01:26,104 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595934086, 'alert': 'OK'}, <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11290)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:01:26,104 INFO     [server] -> Sent message to ('127.0.0.1', 11290): {'response': 200, 'time': 1595934086, 'alert': 'OK'}
+2020-07-28 14:01:26,104 INFO     [server] New CLIENT: "Guest" from ('127.0.0.1', 11290)
+2020-07-28 14:12:57,606 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:12:57,606 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:13:28,060 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:13:28,061 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:13:28,064 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:13:51,295 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:13:51,296 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:13:51,298 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:14:23,272 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:14:23,273 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:14:24,533 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=596, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 11980)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:14:24,534 INFO     [server] <- Received message from ('127.0.0.1', 11980): {'action': 'presence', 'time': 1595934864, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}
+2020-07-28 14:14:24,534 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595934864, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:15:24,259 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:15:24,260 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:15:24,263 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:15:25,486 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=664, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12036)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:15:25,487 INFO     [server] <- Received message from ('127.0.0.1', 12036): {'action': 'presence', 'time': 1595934925, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}
+2020-07-28 14:15:25,487 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595934925, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:15:25,516 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 25092)>, {'action': 'presence', 'time': 1595934925, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}, <socket.socket fd=664, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12036)>), {}
+2020-07-28 14:15:25,517 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595934925, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:15:25,517 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:15:25,517 DEBUG    [server] Formed response: {'response': 200, 'time': 1595934925, 'alert': 'OK'}
+2020-07-28 14:15:25,518 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595934925, 'alert': 'OK'}, <socket.socket fd=664, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12036)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:15:25,518 INFO     [server] -> Sent message to ('127.0.0.1', 12036): {'response': 200, 'time': 1595934925, 'alert': 'OK'}
+2020-07-28 14:15:25,518 INFO     [server] New CLIENT: "user0" from ('127.0.0.1', 12036)
+2020-07-28 14:15:26,014 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=828, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12037)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:15:26,015 INFO     [server] <- Received message from ('127.0.0.1', 12037): {'action': 'presence', 'time': 1595934926, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}
+2020-07-28 14:15:26,015 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595934926, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:15:26,041 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 25092)>, {'action': 'presence', 'time': 1595934926, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}, <socket.socket fd=828, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12037)>), {}
+2020-07-28 14:15:26,041 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595934926, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:15:26,042 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:15:26,042 DEBUG    [server] Formed response: {'response': 200, 'time': 1595934926, 'alert': 'OK'}
+2020-07-28 14:15:26,042 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595934926, 'alert': 'OK'}, <socket.socket fd=828, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12037)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:15:26,043 INFO     [server] -> Sent message to ('127.0.0.1', 12037): {'response': 200, 'time': 1595934926, 'alert': 'OK'}
+2020-07-28 14:15:26,043 INFO     [server] New CLIENT: "user1" from ('127.0.0.1', 12037)
+2020-07-28 14:16:48,038 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=664, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12036)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:16:48,038 INFO     [server] <- Received message from ('127.0.0.1', 12036): {'action': 'exit', 'time': 1595935007, 'user': {'account_name': 'user0'}}
+2020-07-28 14:16:48,039 INFO     [server] Client user0 has disconnected.
+2020-07-28 14:16:48,041 INFO     [server] Connection with ('127.0.0.1', 12036) was reset
+2020-07-28 14:31:11,498 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:31:11,499 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:31:11,531 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:31:12,758 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=736, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12908)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:31:12,758 INFO     [server] <- Received message from ('127.0.0.1', 12908): {'action': 'presence', 'time': 1595935872, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}
+2020-07-28 14:31:12,759 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595935872, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:32:09,816 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:32:09,816 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:32:09,852 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:32:11,101 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=596, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12958)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:32:11,102 INFO     [server] <- Received message from ('127.0.0.1', 12958): {'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}
+2020-07-28 14:32:11,103 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:32:11,123 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 12984)>, {'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}, <socket.socket fd=596, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12958)>), {}
+2020-07-28 14:32:11,123 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:32:11,124 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:32:11,124 DEBUG    [server] Formed response: {'response': 200, 'time': 1595935931, 'alert': 'OK'}
+2020-07-28 14:32:11,125 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595935931, 'alert': 'OK'}, <socket.socket fd=596, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12958)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:32:11,125 INFO     [server] -> Sent message to ('127.0.0.1', 12958): {'response': 200, 'time': 1595935931, 'alert': 'OK'}
+2020-07-28 14:32:11,125 INFO     [server] New CLIENT: "user0" from ('127.0.0.1', 12958)
+2020-07-28 14:32:11,612 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=792, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12959)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:32:11,613 INFO     [server] <- Received message from ('127.0.0.1', 12959): {'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}
+2020-07-28 14:32:11,613 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:32:11,629 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 12984)>, {'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}, <socket.socket fd=792, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12959)>), {}
+2020-07-28 14:32:11,629 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595935931, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:32:11,630 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:32:11,630 DEBUG    [server] Formed response: {'response': 200, 'time': 1595935931, 'alert': 'OK'}
+2020-07-28 14:32:11,630 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595935931, 'alert': 'OK'}, <socket.socket fd=792, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12959)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:32:11,630 INFO     [server] -> Sent message to ('127.0.0.1', 12959): {'response': 200, 'time': 1595935931, 'alert': 'OK'}
+2020-07-28 14:32:11,630 INFO     [server] New CLIENT: "user1" from ('127.0.0.1', 12959)
+2020-07-28 14:32:30,118 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=596, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 12958)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:32:30,118 INFO     [server] <- Received message from ('127.0.0.1', 12958): {'action': 'exit', 'time': 1595935949, 'user': {'account_name': 'user0'}}
+2020-07-28 14:32:30,119 INFO     [server] Client user0 has disconnected.
+2020-07-28 14:32:30,121 INFO     [server] Connection with ('127.0.0.1', 12958) was reset
+2020-07-28 14:36:07,044 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:36:07,045 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:36:18,437 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:36:18,437 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:37:30,826 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:37:30,826 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:37:30,861 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:37:41,075 DEBUG    [server] function "check_settings" called from "<module>", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:37:41,075 DEBUG    [server] function "parse_cli_flags" called from "check_settings", params = (['-a', '127.0.0.1', '-p', '7777'],), {}
+2020-07-28 14:37:41,109 INFO     [server] Listening on "127.0.0.1":7777
+2020-07-28 14:37:42,397 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=824, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13257)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:42,398 INFO     [server] <- Received message from ('127.0.0.1', 13257): {'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}
+2020-07-28 14:37:42,398 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:37:42,415 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 20380)>, {'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}}, <socket.socket fd=824, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13257)>), {}
+2020-07-28 14:37:42,415 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user0', 'status': 'online'}},), {}
+2020-07-28 14:37:42,416 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:37:42,416 DEBUG    [server] Formed response: {'response': 200, 'time': 1595936262, 'alert': 'OK'}
+2020-07-28 14:37:42,416 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595936262, 'alert': 'OK'}, <socket.socket fd=824, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13257)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:42,417 INFO     [server] -> Sent message to ('127.0.0.1', 13257): {'response': 200, 'time': 1595936262, 'alert': 'OK'}
+2020-07-28 14:37:42,417 INFO     [server] New CLIENT: "user0" from ('127.0.0.1', 13257)
+2020-07-28 14:37:42,865 DEBUG    [server] function "receive_message" called from "run", params = (<socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13258)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:42,866 INFO     [server] <- Received message from ('127.0.0.1', 13258): {'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}
+2020-07-28 14:37:42,867 DEBUG    [server] function "check_presence" called from "run", params = ({'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:37:42,881 DEBUG    [server] function "send_response" called from "run", params = (<Server(Thread-1, started daemon 20380)>, {'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}}, <socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13258)>), {}
+2020-07-28 14:37:42,882 DEBUG    [server] function "process_action" called from "send_response", params = ({'action': 'presence', 'time': 1595936262, 'type': 'status', 'user': {'account_name': 'user1', 'status': 'online'}},), {}
+2020-07-28 14:37:42,882 DEBUG    [server] function "form_response" called from "send_response", params = (200,), {}
+2020-07-28 14:37:42,882 DEBUG    [server] Formed response: {'response': 200, 'time': 1595936262, 'alert': 'OK'}
+2020-07-28 14:37:42,883 DEBUG    [server] function "send_message" called from "send_response", params = ({'response': 200, 'time': 1595936262, 'alert': 'OK'}, <socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13258)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:42,883 INFO     [server] -> Sent message to ('127.0.0.1', 13258): {'response': 200, 'time': 1595936262, 'alert': 'OK'}
+2020-07-28 14:37:42,883 INFO     [server] New CLIENT: "user1" from ('127.0.0.1', 13258)
+2020-07-28 14:37:55,141 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=808, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13258)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:55,141 INFO     [server] <- Received message from ('127.0.0.1', 13258): {'action': 'exit', 'time': 1595936274, 'user': {'account_name': 'user1'}}
+2020-07-28 14:37:55,142 INFO     [server] Client user1 has disconnected.
+2020-07-28 14:37:59,989 DEBUG    [server] function "receive_message" called from "read_requests", params = (<socket.socket fd=824, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 13257)>, <Logger server (DEBUG)>), {}
+2020-07-28 14:37:59,990 INFO     [server] <- Received message from ('127.0.0.1', 13257): {'action': 'exit', 'time': 1595936279, 'user': {'account_name': 'user0'}}
+2020-07-28 14:37:59,990 INFO     [server] Client user0 has disconnected.
