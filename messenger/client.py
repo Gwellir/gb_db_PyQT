@@ -5,6 +5,7 @@ from socket import SOCK_STREAM, socket
 from threading import Thread
 from json import JSONDecodeError
 
+from messenger.client_database import ClientBase
 from messenger.common.constants import (Client, MIN_PORT_NUMBER, MAX_PORT_NUMBER, JIMFields)
 from messenger.common.exceptions import NoAddressGivenError, PortOutOfRangeError, ServerError
 from messenger.common.utils import parse_cli_flags, send_message, receive_message
@@ -13,9 +14,10 @@ from messenger.common.decorators import Log
 
 
 class ClientUI(Thread):
-    def __init__(self, username, sock):
+    def __init__(self, username, sock, db):
         self._username = username
         self._sock = sock
+        self._db = db
         self._logger = CLIENT_LOG
         super().__init__()
 
@@ -23,12 +25,28 @@ class ClientUI(Thread):
     def run(self):
         while True:
             msg = input('> ')
-            if msg.startswith('/exit'):
+            if msg.startswith('/add') or msg.startswith('/del'):
+                try:
+                    params = msg.split(' ', 1)
+                    if params[1] != '':
+                        send_message(self.form_edit_contact_message(params[1], op=params[0]), self._sock, self._logger)
+                        if params[0] == '/add':
+                            self._db.add_contact(params[1])
+                        else:
+                            self._db.del_contact(params[1])
+                    else:
+                        print('Username required!\n')
+                except IndexError:
+                    print('Username required!\n')
+                finally:
+                    continue
+            elif msg.startswith('/exit'):
                 send_message(self.form_exit_message(), self._sock, self._logger)
                 sleep(0.5)
                 return
             to, text = parse_input(msg)
             send_message(self.form_text_message(to, text), self._sock, self._logger)
+            self._db.store_message(to, text, outgoing=True)
             sleep(0.5)
 
     @Log()
@@ -69,21 +87,38 @@ class ClientUI(Thread):
 
         return exit_obj
 
+    @Log()
+    def form_edit_contact_message(self, contact_name, op='/add'):
+        op_value = JIMFields.ActionData.ADD_CONTACT\
+            if op == '/add'\
+            else JIMFields.ActionData.DEL_CONTACT
+        edit_obj = {
+            JIMFields.ACTION: op_value,
+            JIMFields.TIME: int(datetime.now().timestamp()),
+            JIMFields.USER_LOGIN: self._username,
+            JIMFields.USER_ID: contact_name,
+        }
+
+        CLIENT_LOG.debug(f'Formed "{op_value}" message for "{contact_name}" from "{self._username}"')
+        return edit_obj
+
 
 class ClientNetwork(Thread):
-    def __init__(self, username, conn):
+    def __init__(self, username, conn, db):
         self._username = username
         self._sock = conn
+        self._db = db
         self._logger = CLIENT_LOG
         super().__init__()
 
     def run(self):
         while True:
-            sender, answer = parse_message(receive_message(self._sock, self._logger))
+            sender, answer, time = parse_message(receive_message(self._sock, self._logger))
             if sender != 'SERVER':
-                print(answer)
-            elif sender != username:
-                print('> ', end='')
+                print(f'{time.time()} @{sender}: {answer}')
+                if sender != username:
+                    print('> ', end='')
+                    self._db.store_message(sender, answer, outgoing=False)
             if answer is None:
                 self._sock.close()
                 return
@@ -101,6 +136,18 @@ def check_settings(args):
         raise PortOutOfRangeError
 
     return settings.address, settings.port, settings.user
+
+
+@Log()
+def form_contacts_request(acc_name):
+    req_obj = {
+        JIMFields.ACTION: JIMFields.ActionData.GET_CONTACTS,
+        JIMFields.TIME: int(datetime.now().timestamp()),
+        JIMFields.USER_LOGIN: acc_name,
+    }
+
+    CLIENT_LOG.debug(f'Formed contacts request for "{acc_name}"')
+    return req_obj
 
 
 @Log()
@@ -144,6 +191,7 @@ def parse_message(message_obj):
     if not message_obj:
         return None, None
     key_list = message_obj.keys()
+    msg_time = datetime.now()
     sender = 'SERVER'
     info = None
     if JIMFields.TIME in key_list:
@@ -152,7 +200,7 @@ def parse_message(message_obj):
             if JIMFields.ERROR in key_list:
                 CLIENT_LOG.error(f'Got ERROR from server: "{message_obj[JIMFields.ERROR]}"')
                 info = f'Error: {message_obj[JIMFields.ERROR]}'
-                raise ServerError(message_obj[JIMFields.ERROR])
+                # raise ServerError(message_obj[JIMFields.ERROR])
             elif JIMFields.ALERT in key_list:
                 CLIENT_LOG.info(f'Got ALERT from server: "{message_obj[JIMFields.ALERT]}"')
                 info = f'Alert: {message_obj[JIMFields.ALERT]}'
@@ -163,11 +211,10 @@ def parse_message(message_obj):
                 # send_message(presence, conn, CLIENT_LOG)
             elif message_obj[JIMFields.ACTION] == JIMFields.ActionData.MESSAGE:
                 CLIENT_LOG.info(f'Got MESSAGE from server: "{message_obj[JIMFields.MESSAGE]}"')
-                info = f'{datetime.fromtimestamp(message_obj[JIMFields.TIME]).time()} @{message_obj[JIMFields.FROM]}:' \
-                       f' {message_obj[JIMFields.MESSAGE]}'
+                info = f'{message_obj[JIMFields.MESSAGE]}'
                 sender = message_obj[JIMFields.FROM]
 
-    return sender, info
+    return sender, info, msg_time
 
 
 def parse_input(msg):
@@ -181,6 +228,7 @@ def parse_input(msg):
 
 if __name__ == '__main__':
     address, port, username = check_settings(sys.argv[1:])
+    db = ClientBase(username)
 
     try:
         conn = socket(type=SOCK_STREAM)
@@ -191,9 +239,15 @@ if __name__ == '__main__':
         CLIENT_LOG.info(f'CONNECTING to server: {address}:{port}')
         conn.connect((address, port))
 
+        # sending PRESENCE message upon connection
         presence = form_presence_message(username, Client.ACC_STATUS)
         send_message(presence, conn, CLIENT_LOG)
-        sender, answer = parse_message(receive_message(conn, CLIENT_LOG))
+        sender, answer, time = parse_message(receive_message(conn, CLIENT_LOG))
+        print(f'{sender} answered with "{answer}"')
+
+        # next - request contact list from the server
+        send_message(form_contacts_request(username), conn, CLIENT_LOG)
+        sender, answer, time = parse_message(receive_message(conn, CLIENT_LOG))
         print(f'{sender} answered with "{answer}"')
     except JSONDecodeError:
         CLIENT_LOG.error('Malformed JSON object received.')
@@ -206,11 +260,11 @@ if __name__ == '__main__':
         exit(1)
 
     else:
-        server_thread = ClientNetwork(username, conn)
+        server_thread = ClientNetwork(username, conn, db)
         server_thread.daemon = True
         server_thread.start()
 
-        ui_thread = ClientUI(username, conn)
+        ui_thread = ClientUI(username, conn, db)
         ui_thread.daemon = True
         ui_thread.start()
 

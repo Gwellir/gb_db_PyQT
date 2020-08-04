@@ -2,7 +2,9 @@ from enum import Enum
 
 SERVER_ADDRESS = 'localhost'
 SERVER_PORT = 7777
-SERVER_DB_FILE = 'sqlite:///db/server_base.db3'
+SERVER_DB_PATH = 'db/'
+SERVER_DB_FILE = 'server_base.db3'
+CLIENT_DB_PREFIX = 'db/client_base'
 ENCODING = 'utf-8'
 MAX_DATA_LENGTH = 1024
 MIN_PORT_NUMBER = 1024
@@ -18,6 +20,7 @@ class Status:
 
 class ServerCodes:
     OK = 200
+    ACCEPTED = 202
     JSON_ERROR = 400
     AUTH_REQUIRED = 401
     AUTH_CREDS = 402
@@ -29,6 +32,7 @@ class ServerCodes:
 
 CODE_MESSAGES = {
     ServerCodes.OK: 'OK',
+    ServerCodes.ACCEPTED: 'Request accepted',
     ServerCodes.JSON_ERROR: 'Incorrect request',
     ServerCodes.AUTH_REQUIRED: 'Authorization required',
     ServerCodes.AUTH_CREDS: 'Wrong password',
@@ -51,6 +55,8 @@ class JIMFields:
     FROM = 'from'
     MESSAGE = 'message'
     ROOM = 'room'
+    USER_LOGIN = 'user_login'
+    USER_ID = 'user_id'
 
     class ActionData:
         PRESENCE = 'presence'
@@ -59,6 +65,9 @@ class JIMFields:
         MESSAGE = 'msg'
         PROBE = 'probe'
         EXIT = 'exit'
+        GET_CONTACTS = 'get_contacts'
+        ADD_CONTACT = 'add_contact'
+        DEL_CONTACT = 'del_contact'
 
     class UserData:
         ACCOUNT_NAME = 'account_name'

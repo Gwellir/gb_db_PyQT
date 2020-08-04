@@ -1,20 +1,28 @@
+import configparser
 import select
 import sys
+import os
 from collections import defaultdict
 from json import JSONDecodeError
+from pprint import pprint
 from socket import SOCK_STREAM, socket, AF_INET
 from datetime import datetime
-from threading import Thread
+from threading import Thread, Lock
+from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtCore import QTimer
 
-from messenger.common.constants import (ServerCodes, SERVER_PORT, CODE_MESSAGES, JIMFields, MIN_PORT_NUMBER,
-                                        MAX_PORT_NUMBER, MAX_CLIENTS, TIMEOUT_INTERVAL)
+from messenger.common.constants import (ServerCodes, SERVER_PORT, CODE_MESSAGES, JIMFields, MAX_CLIENTS,
+                                        TIMEOUT_INTERVAL, SERVER_DB_FILE, SERVER_DB_PATH)
 from messenger.common.utils import parse_cli_flags, send_message, receive_message
-from messenger.common.exceptions import PortOutOfRangeError
 from messenger.log.server_log_config import SERVER_LOG
 from messenger.common.decorators import Log
 from messenger.descr import PortNumber, IPAddress
 from messenger.meta import ServerWatcher
 from messenger.server_database import ServerBase
+from messenger.server_gui import MainWindow, gui_create_model, create_history_model, HistoryWindow, ConfigWindow
+
+conn_change = False
+conflag_lock = Lock()
 
 
 class User:
@@ -65,6 +73,7 @@ class Server(Thread, metaclass=ServerWatcher):
 
     def run(self):
         """Main cycle, takes new connections, processes closed ones and operates data exchange for existing clients."""
+        global conn_change
         self.init_socket()
 
         while True:
@@ -84,6 +93,8 @@ class Server(Thread, metaclass=ServerWatcher):
                         self.send_response(presence_obj, client)
                         self._users[client] = user
                         self._clients.append(client)
+                        with conflag_lock:
+                            conn_change = True
                         SERVER_LOG.info(f'New CLIENT: "{user.username}" from {user.address}')
                         print(f'Client connected: {user}')
                     else:
@@ -93,6 +104,8 @@ class Server(Thread, metaclass=ServerWatcher):
                     self.terminate_connection(client, ServerCodes.JSON_ERROR)
                     continue
                 except ConnectionResetError:
+                    with conflag_lock:
+                        conn_change = True
                     SERVER_LOG.info(f'Connection with {client.getpeername()} was reset')
                     continue
                 # clients.append(client)
@@ -115,6 +128,7 @@ class Server(Thread, metaclass=ServerWatcher):
 
         Returns a dict of lists of responses."""
 
+        global conn_change
         responses = defaultdict(list)
         # a dict for reversed mapping (username -> socket)
         user_dict = {self._users[user].username: user for user in self._users}
@@ -125,9 +139,11 @@ class Server(Thread, metaclass=ServerWatcher):
                 try:
                     # if we get a message
                     if data[JIMFields.ACTION] == JIMFields.ActionData.MESSAGE:
-                        print(data)
                         # send to the specified user
                         if data[JIMFields.TO] in user_dict:
+                            self._db.store_message(self._users[sock].username,
+                                                   data[JIMFields.TO],
+                                                   data[JIMFields.MESSAGE])
                             responses[user_dict[data[JIMFields.TO]]].append(data)
                         # send to all users through pseudo-chat "test"
                         elif data[JIMFields.TO] == '#test':
@@ -137,20 +153,40 @@ class Server(Thread, metaclass=ServerWatcher):
                         else:
                             responses[user_dict[data[JIMFields.FROM]]] \
                                 .append(self.form_response(ServerCodes.USER_OFFLINE))
+                    # sending contacts to the client upon GET_CONTACTS request
+                    elif data[JIMFields.ACTION] == JIMFields.ActionData.GET_CONTACTS:
+                        if data[JIMFields.USER_LOGIN] == self._users[sock].username:
+                            self.send_contacts(sock)
+                    elif data[JIMFields.ACTION] == JIMFields.ActionData.DEL_CONTACT:
+                        if self._db.del_contact(self._users[sock].username,
+                                                data[JIMFields.USER_ID]):
+                            send_message(self.form_response(code=ServerCodes.OK), sock, SERVER_LOG)
+                        else:
+                            send_message(self.form_response(code=ServerCodes.AUTH_NOUSER), sock, SERVER_LOG)
+                    elif data[JIMFields.ACTION] == JIMFields.ActionData.ADD_CONTACT:
+                        if self._db.add_contact(self._users[sock].username, data[JIMFields.USER_ID]):
+                            send_message(self.form_response(code=ServerCodes.OK), sock, SERVER_LOG)
+                        else:
+                            send_message(self.form_response(code=ServerCodes.AUTH_NOUSER), sock, SERVER_LOG)
                     # disconnect upon receiving "exit" command
                     elif data[JIMFields.ACTION] == JIMFields.ActionData.EXIT:
                         print(f'Client {self._users[sock].username} has disconnected.')
                         SERVER_LOG.info(f'Client {self._users[sock].username} has disconnected.')
                         self._db.on_logout(self._users[sock].username)
+                        with conflag_lock:
+                            conn_change = True
                         self._users.pop(sock)
                         w_clients.remove(sock)
                 except KeyError as ex:
                     pass
             # drop client from active lists upon remote disconnection
-            except:
+            except Exception as e:
+                print(e)
                 print(f'client {sock.fileno()} {sock.getpeername()} disconnected')
                 SERVER_LOG.info(f'Connection with {sock.getpeername()} was reset')
                 self._db.on_logout(self._users[sock].username)
+                with conflag_lock:
+                    conn_change = True
                 self._users.pop(sock)
                 w_clients.remove(sock)
 
@@ -189,6 +225,16 @@ class Server(Thread, metaclass=ServerWatcher):
                 SERVER_LOG.error(f'Could not parse PRESENCE message: {presence_obj}')
                 raise e
                 # return False
+
+    @Log()
+    def send_contacts(self, sock):
+        res = {
+            JIMFields.RESPONSE: ServerCodes.ACCEPTED,
+            JIMFields.TIME: int(datetime.now().timestamp()),
+            JIMFields.ALERT: self._db.get_contacts(self._users[sock].username)
+        }
+
+        send_message(res, sock, SERVER_LOG)
 
     @Log()
     def send_response(self, message_obj, client, code=ServerCodes.OK, user=None):
@@ -247,50 +293,100 @@ class Server(Thread, metaclass=ServerWatcher):
 
     @staticmethod
     @Log(raiseable=True)
-    def check_settings(args):
+    def check_settings(def_port, def_address):
         """Parse and check server settings."""
 
-        settings = parse_cli_flags(args)
+        settings = parse_cli_flags(sys.argv[1:])
         if not settings.address:
-            return '', SERVER_PORT  # doesn't work now as address descriptor blocks empty address field
+            return def_address, def_port  # doesn't work now as address descriptor blocks empty address field
 
         return settings.address, settings.port
 
 
-def print_help():
-    print('Commands list:')
-    print('users - shows the list of known users')
-    print('active - shows the list of active users')
-    print('history - shows user login history')
-    print('exit - stop the server')
-    print('help - show this help message')
+def main():
+    def show_statistics():
+        global stat_window
+        stat_window = HistoryWindow()
+        stat_window.history_table.setModel(create_history_model(db))
+        stat_window.history_table.resizeColumnsToContents()
+        stat_window.history_table.resizeRowsToContents()
+        stat_window.show()
 
+    def list_update():
+        global conn_change
+        if conn_change:
+            main_window.clients_table.setModel(gui_create_model(db))
+            main_window.clients_table.resizeColumnsToContents()
+            main_window.clients_table.resizeRowsToContents()
+            with conflag_lock:
+                conn_change = False
 
-if __name__ == '__main__':
-    address, port = Server.check_settings(sys.argv[1:])
-    db = ServerBase()
+    def server_config():
+        global config_window
+
+        config_window = ConfigWindow()
+        config_window.db_path.insert(config['SETTINGS']['database_path'])
+        config_window.db_file.insert(config['SETTINGS']['database_file'])
+        config_window.port.insert(config['SETTINGS']['default_port'])
+        config_window.ip.insert(config['SETTINGS']['listen_address'])
+        config_window.save_btn.clicked.connect(save_server_config)
+
+    def save_server_config():
+        global config_window
+        message = QMessageBox()
+        config['SETTINGS']['database_path'] = config_window.db_path.text()
+        config['SETTINGS']['database_file'] = config_window.db_file.text()
+        try:
+            port = int(config_window.port.text())
+        except ValueError:
+            message.warning(config_window, 'Error', 'Port number should be an integer!')
+        else:
+            config['SETTINGS']['listen_Address'] = config_window.ip.text()
+            if 1023 < port < 65536:
+                config['SETTINGS']['default_port'] = str(port)
+                # print(port)
+                with open('server.ini', 'w') as conf:
+                    config.write(conf)
+                    message.information(
+                        config_window, 'Done', 'New settings applied!')
+            else:
+                message.warning(config_window, 'Error', 'Enter a valid port number (1024 - 65535)!')
+
+    config = configparser.ConfigParser()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config.read(f"{dir_path}/{'server.ini'}")
+
+    address, port = Server.check_settings(
+        config['SETTINGS']['default_port'], config['SETTINGS']['listen_address'])
+    db = ServerBase(os.path.join(
+        config['SETTINGS']['database_path'], config['SETTINGS']['database_file']))
     server = Server(address, port, db)
     server.daemon = True
     server.start()
 
-    print_help()
+    # print_help()
 
-    while True:
-        command = input('Input a command: ')
-        if command == 'help':
-            print_help()
-        elif command == 'exit':
-            break
-        elif command == 'users':
-            for user in sorted(db.users_list()):
-                print(f'User: {user[0]}, last login: {user[1]}')
-        elif command == 'active':
-            for user in sorted(db.active_users_list()):
-                print(f'User {user[0]}, address: {user[1]}:{user[2]}, login time: {user[3]}')
-        elif command == 'history':
-            name = input('Input a username or simply press <Enter> to show all entries: ')
-            for user in sorted(db.login_history(name)):
-                print(f'User: {user[0]}, login time: {user[1]}. Address: {user[2]}:{user[3]}')
-        else:
-            print('Unknown command.')
+    server_app = QApplication(sys.argv)
+    main_window = MainWindow()
 
+    # main_window init
+    main_window.statusBar().showMessage('Server is online')
+    main_window.clients_table.setModel(gui_create_model(db))
+    main_window.clients_table.resizeColumnsToContents()
+    main_window.clients_table.resizeRowsToContents()
+
+    # binding buttons to functions
+    main_window.refresh_btn.triggered.connect(list_update)
+    main_window.show_history_btn.triggered.connect(show_statistics)
+    main_window.config_btn.triggered.connect(server_config)
+
+    timer = QTimer()
+    timer.timeout.connect(list_update)
+    timer.start(1000)
+
+    # GUI start
+    server_app.exec_()
+
+
+if __name__ == '__main__':
+    main()

@@ -10,7 +10,7 @@ while True:
     if user == 'q':
         break
     elif user == 's':
-        num = input(f'How many clients would you like ro run ({amount}): ')
+        num = input(f'How many clients would you like to run ({amount}): ')
         if num != '':
             try:
                 amount = int(num)
