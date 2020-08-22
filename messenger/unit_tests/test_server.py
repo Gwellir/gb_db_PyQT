@@ -2,11 +2,11 @@ import json
 from datetime import datetime
 from unittest import TestCase
 
-from messenger.server import (check_settings, form_response, process_action, send_response, check_presence,
+from server import (check_settings, form_response, process_action, send_response, check_presence,
                               terminate_connection)
-from messenger.common.constants import ENCODING
-from messenger.common.exceptions import PortOutOfRangeError
-from messenger.unit_tests.loopback import ConnLoopback
+from common.constants import ENCODING
+from common.exceptions import PortOutOfRangeError
+from unit_tests.loopback import ConnLoopback
 
 
 class TestServer(TestCase):

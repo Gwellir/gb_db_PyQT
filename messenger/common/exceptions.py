@@ -1,4 +1,4 @@
-from messenger.common.constants import MIN_PORT_NUMBER, MAX_PORT_NUMBER
+from common.constants import MIN_PORT_NUMBER, MAX_PORT_NUMBER
 
 
 class NoAddressGivenError(Exception):

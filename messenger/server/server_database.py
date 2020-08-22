@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey, DateTime, UniqueConstraint, \
-    or_
+    or_, Text
 from sqlalchemy.orm import mapper, sessionmaker, aliased
 from datetime import datetime
 from pprint import pprint
@@ -11,9 +11,11 @@ class ServerBase:
     class Users:
         """User table representation class."""
 
-        def __init__(self, username):
+        def __init__(self, username, passwd_hash):
             self.name = username
             self.last_login = datetime.now()
+            # self.passwd_hash = passwd_hash
+            # self.pubkey = None
             self.id = None
 
     class ActiveUsers:
@@ -64,7 +66,9 @@ class ServerBase:
         users_table = Table('users', self.metadata,
                             Column('id', Integer, primary_key=True),
                             Column('name', String, unique=True),
-                            Column('last_login', DateTime)
+                            Column('last_login', DateTime),
+                            # Column('passwd_hash', String),
+                            # Column('pubkey', Text),
                             )
 
         active_users_table = Table('active_users', self.metadata,
@@ -113,22 +117,20 @@ class ServerBase:
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
 
-    def on_login(self, username, ip_address, port):
+    def on_login(self, username, ip_address, port): #key
         """Stores relevant data for user login.
 
         Adds a new user into Users or finds an existing user and puts them into ActiveUsers.
         Also adds a LoginHistory entry."""
 
-        print(username, ip_address, port)
-
         res = self.session.query(self.Users).filter_by(name=username)
         if res.count():
             user = res.first()
             user.last_login = datetime.now()
+            # if user.pubkey != key:
+            #     user.pubkey = key
         else:
-            user = self.Users(username)
-            self.session.add(user)
-            self.session.commit()
+            raise ValueError(f'User "{username}" is not registered')
 
         new_active_user = self.ActiveUsers(user.id, ip_address, port, datetime.now())
         self.session.add(new_active_user)
@@ -145,6 +147,14 @@ class ServerBase:
         self.session.query(self.ActiveUsers).filter_by(user=user_leaving.id).delete()
 
         self.session.commit()
+
+    def get_hash(self, name):
+        user = self.session.query(self.Users).filter_by(name=name).first()
+        return user.passwd_hash
+
+    def get_pubkey(self, name):
+        user = self.session.query(self.Users).filter_by(name=name).first()
+        return user.pubkey
 
     def users_list(self):
         query = self.session.query(
@@ -274,7 +284,7 @@ class ServerBase:
 
 
 if __name__ == '__main__':
-    test_db = ServerBase('db/server_base.db3')
+    test_db = ServerBase('../db/server_base.db3')
 
     test_db.on_login('cli1', '192.168.0.5', 1234)
     test_db.on_login('cli2', '192.168.1.23', 7777)

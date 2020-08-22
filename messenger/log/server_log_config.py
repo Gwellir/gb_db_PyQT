@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from logging.handlers import TimedRotatingFileHandler
 
 SERVER_LOG = logging.getLogger('server')
@@ -10,7 +11,9 @@ CONSOLE_LOGGER.setFormatter(FORMATTER)
 CONSOLE_LOGGER.setLevel(logging.ERROR)
 SERVER_LOG.addHandler(CONSOLE_LOGGER)
 
-FILE_LOGGER = TimedRotatingFileHandler('log/server.log',
+path = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(path, 'server.log')
+FILE_LOGGER = TimedRotatingFileHandler(path,
                                        when="d",
                                        interval=1)
 FILE_LOGGER.setFormatter(FORMATTER)

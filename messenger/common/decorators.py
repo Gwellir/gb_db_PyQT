@@ -2,8 +2,8 @@ import os
 import inspect
 from functools import wraps
 
-from messenger.log.server_log_config import SERVER_LOG
-from messenger.log.client_log_config import CLIENT_LOG
+from log.server_log_config import SERVER_LOG
+from log.client_log_config import CLIENT_LOG
 
 
 class Log:
@@ -30,7 +30,7 @@ class Log:
                     # logger.debug(f'function "{func.__name__} returned: {res}')
                 except Exception as e:
                     logger.error(f'function "{func.__name__}" raised an exception "{type(e).__name__}" {e.args}')
-                    return None
+                    raise e
             return res
         return wrapped
 

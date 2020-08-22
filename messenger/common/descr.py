@@ -1,9 +1,9 @@
 from ipaddress import ip_address
 
-from messenger.log.server_log_config import SERVER_LOG
-from messenger.log.client_log_config import CLIENT_LOG
-from messenger.common.constants import MIN_PORT_NUMBER, MAX_PORT_NUMBER
-from messenger.common.exceptions import PortOutOfRangeError, InvalidIPAddress
+from log.server_log_config import SERVER_LOG
+from log.client_log_config import CLIENT_LOG
+from common.constants import MIN_PORT_NUMBER, MAX_PORT_NUMBER
+from common.exceptions import PortOutOfRangeError, InvalidIPAddress
 
 
 class PortNumber:

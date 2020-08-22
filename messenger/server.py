@@ -4,22 +4,21 @@ import sys
 import os
 from collections import defaultdict
 from json import JSONDecodeError
-from pprint import pprint
 from socket import SOCK_STREAM, socket, AF_INET
 from datetime import datetime
 from threading import Thread, Lock
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import QTimer
 
-from messenger.common.constants import (ServerCodes, SERVER_PORT, CODE_MESSAGES, JIMFields, MAX_CLIENTS,
-                                        TIMEOUT_INTERVAL, SERVER_DB_FILE, SERVER_DB_PATH)
-from messenger.common.utils import parse_cli_flags, send_message, receive_message
-from messenger.log.server_log_config import SERVER_LOG
-from messenger.common.decorators import Log
-from messenger.descr import PortNumber, IPAddress
-from messenger.meta import ServerWatcher
-from messenger.server_database import ServerBase
-from messenger.server_gui import MainWindow, gui_create_model, create_history_model, HistoryWindow, ConfigWindow
+from common.constants import (ResCodes, CODE_MESSAGES, JIM, MAX_CLIENTS,
+                              TIMEOUT_INTERVAL, SERVER_PORT)
+from common.utils import parse_cli_flags, send_message, receive_message
+from log.server_log_config import SERVER_LOG
+from common.decorators import Log
+from common.descr import PortNumber, IPAddress
+from meta import ServerWatcher
+from server.server_database import ServerBase
+from server_gui import MainWindow, gui_create_model, create_history_model, HistoryWindow, ConfigWindow
 
 conn_change = False
 conflag_lock = Lock()
@@ -48,6 +47,9 @@ class Server(Thread, metaclass=ServerWatcher):
     _port = PortNumber()
 
     def __init__(self, server_address, server_port, db):
+        """Initializes server class instance with params.
+
+        :type db: :class:`messenger.server_database.ServerBase`"""
         self._address = server_address
         self._port = server_port
         self._sock = None
@@ -86,9 +88,9 @@ class Server(Thread, metaclass=ServerWatcher):
                 try:
                     presence_obj = receive_message(client, SERVER_LOG)
                     if self.check_presence(presence_obj):
-                        user = User(client, addr, presence_obj[JIMFields.USER][JIMFields.UserData.ACCOUNT_NAME],
-                                    presence_obj[JIMFields.USER][JIMFields.UserData.STATUS],
-                                    datetime.fromtimestamp(presence_obj[JIMFields.TIME]))
+                        user = User(client, addr, presence_obj[JIM.USER][JIM.UserData.ACCOUNT_NAME],
+                                    presence_obj[JIM.USER][JIM.UserData.STATUS],
+                                    datetime.fromtimestamp(presence_obj[JIM.TIME]))
                         self._db.on_login(user.username, user.address[0], user.address[1])
                         self.send_response(presence_obj, client)
                         self._users[client] = user
@@ -98,10 +100,10 @@ class Server(Thread, metaclass=ServerWatcher):
                         SERVER_LOG.info(f'New CLIENT: "{user.username}" from {user.address}')
                         print(f'Client connected: {user}')
                     else:
-                        self.terminate_connection(client, ServerCodes.JSON_ERROR)
+                        self.terminate_connection(client, ResCodes.JSON_ERROR)
                         continue
                 except JSONDecodeError:
-                    self.terminate_connection(client, ServerCodes.JSON_ERROR)
+                    self.terminate_connection(client, ResCodes.JSON_ERROR)
                     continue
                 except ConnectionResetError:
                     with conflag_lock:
@@ -138,38 +140,44 @@ class Server(Thread, metaclass=ServerWatcher):
                 data = receive_message(sock, SERVER_LOG)
                 try:
                     # if we get a message
-                    if data[JIMFields.ACTION] == JIMFields.ActionData.MESSAGE:
+                    if data[JIM.ACTION] == JIM.Actions.MESSAGE:
                         # send to the specified user
-                        if data[JIMFields.TO] in user_dict:
+                        if data[JIM.TO] in user_dict:
                             self._db.store_message(self._users[sock].username,
-                                                   data[JIMFields.TO],
-                                                   data[JIMFields.MESSAGE])
-                            responses[user_dict[data[JIMFields.TO]]].append(data)
+                                                   data[JIM.TO],
+                                                   data[JIM.MESSAGE])
+                            responses[user_dict[data[JIM.TO]]].append(data)
+                            send_message(self.form_response(), sock, SERVER_LOG)
                         # send to all users through pseudo-chat "test"
-                        elif data[JIMFields.TO] == '#test':
+                        elif data[JIM.TO] == '#test':
                             for user in user_dict:
                                 responses[user_dict[user]].append(data)
+                                send_message(self.form_response(), sock, SERVER_LOG)
                         # except if the target is offline
                         else:
-                            responses[user_dict[data[JIMFields.FROM]]] \
-                                .append(self.form_response(ServerCodes.USER_OFFLINE))
+                            responses[user_dict[data[JIM.FROM]]] \
+                                .append(self.form_response(ResCodes.USER_OFFLINE))
+                    # sending user list to the client upon GET_USERS request
+                    elif data[JIM.ACTION] == JIM.Actions.GET_USERS:
+                        if data[JIM.USER_LOGIN] == self._users[sock].username:
+                            self.send_userlist(sock)
                     # sending contacts to the client upon GET_CONTACTS request
-                    elif data[JIMFields.ACTION] == JIMFields.ActionData.GET_CONTACTS:
-                        if data[JIMFields.USER_LOGIN] == self._users[sock].username:
+                    elif data[JIM.ACTION] == JIM.Actions.GET_CONTACTS:
+                        if data[JIM.USER_LOGIN] == self._users[sock].username:
                             self.send_contacts(sock)
-                    elif data[JIMFields.ACTION] == JIMFields.ActionData.DEL_CONTACT:
+                    elif data[JIM.ACTION] == JIM.Actions.DEL_CONTACT:
                         if self._db.del_contact(self._users[sock].username,
-                                                data[JIMFields.USER_ID]):
-                            send_message(self.form_response(code=ServerCodes.OK), sock, SERVER_LOG)
+                                                data[JIM.USER_ID]):
+                            send_message(self.form_response(code=ResCodes.OK), sock, SERVER_LOG)
                         else:
-                            send_message(self.form_response(code=ServerCodes.AUTH_NOUSER), sock, SERVER_LOG)
-                    elif data[JIMFields.ACTION] == JIMFields.ActionData.ADD_CONTACT:
-                        if self._db.add_contact(self._users[sock].username, data[JIMFields.USER_ID]):
-                            send_message(self.form_response(code=ServerCodes.OK), sock, SERVER_LOG)
+                            send_message(self.form_response(code=ResCodes.AUTH_NOUSER), sock, SERVER_LOG)
+                    elif data[JIM.ACTION] == JIM.Actions.ADD_CONTACT:
+                        if self._db.add_contact(self._users[sock].username, data[JIM.USER_ID]):
+                            send_message(self.form_response(code=ResCodes.OK), sock, SERVER_LOG)
                         else:
-                            send_message(self.form_response(code=ServerCodes.AUTH_NOUSER), sock, SERVER_LOG)
+                            send_message(self.form_response(code=ResCodes.AUTH_NOUSER), sock, SERVER_LOG)
                     # disconnect upon receiving "exit" command
-                    elif data[JIMFields.ACTION] == JIMFields.ActionData.EXIT:
+                    elif data[JIM.ACTION] == JIM.Actions.EXIT:
                         print(f'Client {self._users[sock].username} has disconnected.')
                         SERVER_LOG.info(f'Client {self._users[sock].username} has disconnected.')
                         self._db.on_logout(self._users[sock].username)
@@ -215,10 +223,10 @@ class Server(Thread, metaclass=ServerWatcher):
             return False
         else:
             try:
-                if presence_obj[JIMFields.ACTION] == JIMFields.ActionData.PRESENCE \
-                        and presence_obj[JIMFields.TYPE] == JIMFields.TypeData.STATUS \
-                        and presence_obj[JIMFields.USER][JIMFields.UserData.ACCOUNT_NAME] \
-                        and presence_obj[JIMFields.USER][JIMFields.UserData.STATUS]:
+                if presence_obj[JIM.ACTION] == JIM.Actions.PRESENCE \
+                        and presence_obj[JIM.TYPE] == JIM.TypeData.STATUS \
+                        and presence_obj[JIM.USER][JIM.UserData.ACCOUNT_NAME] \
+                        and presence_obj[JIM.USER][JIM.UserData.STATUS]:
                     return True
             # if some fields are missing
             except KeyError as e:
@@ -229,21 +237,31 @@ class Server(Thread, metaclass=ServerWatcher):
     @Log()
     def send_contacts(self, sock):
         res = {
-            JIMFields.RESPONSE: ServerCodes.ACCEPTED,
-            JIMFields.TIME: int(datetime.now().timestamp()),
-            JIMFields.ALERT: self._db.get_contacts(self._users[sock].username)
+            JIM.RESPONSE: ResCodes.ACCEPTED,
+            JIM.TIME: int(datetime.now().timestamp()),
+            JIM.DATA_LIST: self._db.get_contacts(self._users[sock].username)
         }
 
         send_message(res, sock, SERVER_LOG)
 
     @Log()
-    def send_response(self, message_obj, client, code=ServerCodes.OK, user=None):
+    def send_userlist(self, sock):
+        res = {
+            JIM.RESPONSE: ResCodes.ACCEPTED,
+            JIM.TIME: int(datetime.now().timestamp()),
+            JIM.DATA_LIST: [item[0] for item in self._db.users_list()],
+        }
+
+        send_message(res, sock, SERVER_LOG)
+
+    @Log()
+    def send_response(self, message_obj, client, code=ResCodes.OK, user=None):
         """Sends a message with matching response object."""
 
         key_list = message_obj.keys()
-        if JIMFields.TIME in key_list:
-            msg_time = datetime.fromtimestamp(message_obj[JIMFields.TIME])
-            if JIMFields.ACTION in key_list:
+        if JIM.TIME in key_list:
+            msg_time = datetime.fromtimestamp(message_obj[JIM.TIME])
+            if JIM.ACTION in key_list:
                 code = self.process_action(message_obj)
                 send_message(self.form_response(code), client, SERVER_LOG)
 
@@ -257,18 +275,18 @@ class Server(Thread, metaclass=ServerWatcher):
 
     @staticmethod
     @Log()
-    def form_response(code=ServerCodes.OK):
+    def form_response(code=ResCodes.OK):
         """Returns response object for the given code."""
 
         response_obj = {
-            JIMFields.RESPONSE: code,
-            JIMFields.TIME: int(datetime.now().timestamp()),
+            JIM.RESPONSE: code,
+            JIM.TIME: int(datetime.now().timestamp()),
         }
 
         if code < 400:
-            response_obj[JIMFields.ALERT] = CODE_MESSAGES[code]
+            response_obj[JIM.ALERT] = CODE_MESSAGES[code]
         else:
-            response_obj[JIMFields.ERROR] = CODE_MESSAGES[code]
+            response_obj[JIM.ERROR] = CODE_MESSAGES[code]
         SERVER_LOG.debug(f'Formed response: {response_obj}')
 
         return response_obj
@@ -278,16 +296,16 @@ class Server(Thread, metaclass=ServerWatcher):
     def process_action(message_obj):
         """Simple placeholder for checking of action-bound logic."""
 
-        if message_obj[JIMFields.ACTION] == JIMFields.ActionData.PRESENCE:
-            code = ServerCodes.OK
-        elif message_obj[JIMFields.ACTION] == JIMFields.ActionData.AUTH:
-            code = ServerCodes.AUTH_CREDS
-        elif message_obj[JIMFields.ACTION] == JIMFields.ActionData.JOIN:
-            code = ServerCodes.AUTH_NOUSER
-        elif message_obj[JIMFields.ACTION] == JIMFields.ActionData.MESSAGE:
-            code = ServerCodes.USER_OFFLINE
+        if message_obj[JIM.ACTION] == JIM.Actions.PRESENCE:
+            code = ResCodes.OK
+        elif message_obj[JIM.ACTION] == JIM.Actions.AUTH:
+            code = ResCodes.AUTH_CREDS
+        elif message_obj[JIM.ACTION] == JIM.Actions.JOIN:
+            code = ResCodes.AUTH_NOUSER
+        elif message_obj[JIM.ACTION] == JIM.Actions.MESSAGE:
+            code = ResCodes.USER_OFFLINE
         else:
-            code = ServerCodes.SERVER_ERROR
+            code = ResCodes.SERVER_ERROR
 
         return code
 
@@ -298,9 +316,27 @@ class Server(Thread, metaclass=ServerWatcher):
 
         settings = parse_cli_flags(sys.argv[1:])
         if not settings.address:
-            return def_address, def_port  # doesn't work now as address descriptor blocks empty address field
+            return def_address, int(def_port)  # doesn't work now as address descriptor blocks empty address field
 
         return settings.address, settings.port
+
+
+# @Log
+def config_load():
+    '''Config file parser.'''
+    config = configparser.ConfigParser()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config.read(f'{dir_path}/{"server.ini"}')
+
+    if 'SETTINGS' in config:
+        return config
+    else:
+        config.add_section('SETTINGS')
+        config.set('SETTINGS', 'Default_port', str(SERVER_PORT))
+        config.set('SETTINGS', 'Listen_Address', '')
+        config.set('SETTINGS', 'Database_path', '')
+        config.set('SETTINGS', 'Database_file', 'server_database.db3')
+        return config
 
 
 def main():
@@ -352,9 +388,7 @@ def main():
             else:
                 message.warning(config_window, 'Error', 'Enter a valid port number (1024 - 65535)!')
 
-    config = configparser.ConfigParser()
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    config.read(f"{dir_path}/{'server.ini'}")
+    config = config_load()
 
     address, port = Server.check_settings(
         config['SETTINGS']['default_port'], config['SETTINGS']['listen_address'])
