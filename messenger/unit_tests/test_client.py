@@ -1,9 +1,9 @@
 from unittest import TestCase
 from datetime import datetime
 
-from messenger.client import (check_settings, form_auth_message, form_text_message, form_join_message,
+from client import (check_settings, form_auth_message, form_text_message, form_join_message,
                               form_presence_message, parse_message)
-from messenger.common.exceptions import NoAddressGivenError, PortOutOfRangeError
+from common.exceptions import NoAddressGivenError, PortOutOfRangeError
 
 
 class TestClient(TestCase):

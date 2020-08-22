@@ -1,7 +1,8 @@
-from enum import Enum
-
 SERVER_ADDRESS = 'localhost'
 SERVER_PORT = 7777
+SERVER_DB_PATH = 'db/'
+SERVER_DB_FILE = 'server_base.db3'
+CLIENT_DB_PREFIX = 'db/client_base'
 ENCODING = 'utf-8'
 MAX_DATA_LENGTH = 1024
 MIN_PORT_NUMBER = 1024
@@ -15,8 +16,10 @@ class Status:
     AFK = 'away'
 
 
-class ServerCodes:
+class ResCodes:
     OK = 200
+    ACCEPTED = 202
+    ECHO = 205
     JSON_ERROR = 400
     AUTH_REQUIRED = 401
     AUTH_CREDS = 402
@@ -24,21 +27,25 @@ class ServerCodes:
     AUTH_DUPL = 409
     USER_OFFLINE = 410
     SERVER_ERROR = 500
+    AUTH_PROCESS = 511
 
 
 CODE_MESSAGES = {
-    ServerCodes.OK: 'OK',
-    ServerCodes.JSON_ERROR: 'Incorrect request',
-    ServerCodes.AUTH_REQUIRED: 'Authorization required',
-    ServerCodes.AUTH_CREDS: 'Wrong password',
-    ServerCodes.AUTH_NOUSER: 'User or chat doesn`t exist',
-    ServerCodes.AUTH_DUPL: 'This user is already connected',
-    ServerCodes.USER_OFFLINE: 'Target user is offline',
-    ServerCodes.SERVER_ERROR: 'Server error',
+    ResCodes.OK: 'OK',
+    ResCodes.ACCEPTED: 'Request accepted',
+    ResCodes.ECHO: 'Ping',
+    ResCodes.JSON_ERROR: 'Incorrect request',
+    ResCodes.AUTH_REQUIRED: 'Authorization required',
+    ResCodes.AUTH_CREDS: 'Wrong password',
+    ResCodes.AUTH_NOUSER: 'User or chat doesn`t exist',
+    ResCodes.AUTH_DUPL: 'This user is already connected',
+    ResCodes.USER_OFFLINE: 'Target user is offline',
+    ResCodes.SERVER_ERROR: 'Server error',
+    ResCodes.AUTH_PROCESS: 'Sending public key'
 }
 
 
-class JIMFields:
+class JIM:
     TIME = 'time'
     RESPONSE = 'response'
     ERROR = 'error'
@@ -50,18 +57,29 @@ class JIMFields:
     FROM = 'from'
     MESSAGE = 'message'
     ROOM = 'room'
+    USER_LOGIN = 'user_login'
+    USER_ID = 'user_id'
+    DATA_LIST = 'data_list'
+    DATA = 'bin'
 
-    class ActionData:
+    class Actions:
         PRESENCE = 'presence'
         AUTH = 'authenticate'
         JOIN = 'join'
         MESSAGE = 'msg'
         PROBE = 'probe'
+        EXIT = 'exit'
+        GET_CONTACTS = 'get_contacts'
+        ADD_CONTACT = 'add_contact'
+        DEL_CONTACT = 'del_contact'
+        GET_USERS = 'get_users'
+        PUBLIC_KEY_REQUEST = 'pubkey_need'
 
     class UserData:
-        ACCOUNT_NAME = 'account_name'
         STATUS = 'status'
         PASSWORD = 'password'
+        ACCOUNT_NAME = 'account_name'
+        PUBLIC_KEY = 'pubkey'
 
     class TypeData:
         STATUS = 'status'
