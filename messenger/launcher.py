@@ -27,7 +27,7 @@ while True:
             sleep(1 / amount)
             p_list.append(
                 Popen(
-                    f'python client.py -a 127.0.0.1 -p 7777 -u user{i}',
+                    f'python client.py -n test{i + 1} -p 123456 127.0.0.1 7777',
                     creationflags=CREATE_NEW_CONSOLE))
         print(f'launched {amount} clients')
     elif user == 'x':

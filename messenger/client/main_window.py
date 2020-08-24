@@ -115,7 +115,7 @@ class ClientMainWindow(QMainWindow):
         try:
             self.transport.add_contact(new_contact)
         except ServerError as err:
-            self.messages.critical(self, 'Server Error', err)
+            self.messages.critical(self, 'Server Error', str(err))
         except OSError as err:
             if err.errno:
                 self.messages.critical(self, 'Error', 'Connection lost!')

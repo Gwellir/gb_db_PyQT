@@ -23,6 +23,12 @@ class MainWindow(QMainWindow):
         # configuration button
         self.config_btn = QAction('Server config', self)
 
+        # Register user button
+        self.register_btn = QAction('Register new user', self)
+
+        # Remove user button
+        self.remove_btn = QAction('Remove user', self)
+
         # show history button
         self.show_history_btn = QAction('Client history', self)
 
@@ -35,6 +41,8 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.refresh_btn)
         self.toolbar.addAction(self.show_history_btn)
         self.toolbar.addAction(self.config_btn)
+        self.toolbar.addAction(self.register_btn)
+        self.toolbar.addAction(self.remove_btn)
 
         # main window geometry parameters
         self.setFixedSize(800, 600)

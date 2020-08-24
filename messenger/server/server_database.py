@@ -14,8 +14,8 @@ class ServerBase:
         def __init__(self, username, passwd_hash):
             self.name = username
             self.last_login = datetime.now()
-            # self.passwd_hash = passwd_hash
-            # self.pubkey = None
+            self.passwd_hash = passwd_hash
+            self.pubkey = None
             self.id = None
 
     class ActiveUsers:
@@ -67,8 +67,8 @@ class ServerBase:
                             Column('id', Integer, primary_key=True),
                             Column('name', String, unique=True),
                             Column('last_login', DateTime),
-                            # Column('passwd_hash', String),
-                            # Column('pubkey', Text),
+                            Column('passwd_hash', String),
+                            Column('pubkey', Text),
                             )
 
         active_users_table = Table('active_users', self.metadata,
@@ -117,7 +117,7 @@ class ServerBase:
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
 
-    def on_login(self, username, ip_address, port): #key
+    def on_login(self, username, ip_address, port, key):
         """Stores relevant data for user login.
 
         Adds a new user into Users or finds an existing user and puts them into ActiveUsers.
@@ -127,8 +127,8 @@ class ServerBase:
         if res.count():
             user = res.first()
             user.last_login = datetime.now()
-            # if user.pubkey != key:
-            #     user.pubkey = key
+            if user.pubkey != key:
+                user.pubkey = key
         else:
             raise ValueError(f'User "{username}" is not registered')
 
@@ -155,6 +155,34 @@ class ServerBase:
     def get_pubkey(self, name):
         user = self.session.query(self.Users).filter_by(name=name).first()
         return user.pubkey
+
+    def check_user(self, name):
+        return self.session.query(self.Users).filter_by(name=name).count()
+
+    def add_user(self, name, passwd_hash):
+        """
+        Метод регистрации пользователя.
+        Принимает имя и хэш пароля, создаёт запись в таблице статистики.
+        """
+        user_row = self.Users(name, passwd_hash)
+        self.session.add(user_row)
+        self.session.commit()
+        # history_row = self.MessageHistory(user_row.id)
+        # self.session.add(history_row)
+        self.session.commit()
+
+    def remove_user(self, name):
+        """Метод удаляющий пользователя из базы."""
+        user = self.session.query(self.Users).filter_by(name=name).first()
+        self.session.query(self.ActiveUsers).filter_by(user=user.id).delete()
+        self.session.query(self.LoginHistory).filter_by(user=user.id).delete()
+        self.session.query(self.UserContacts).filter_by(user=user.id).delete()
+        self.session.query(
+            self.UserContacts).filter_by(
+            contact=user.id).delete()
+        self.session.query(self.MessageHistory).filter_by(user=user.id).delete()
+        self.session.query(self.Users).filter_by(name=name).delete()
+        self.session.commit()
 
     def users_list(self):
         query = self.session.query(

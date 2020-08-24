@@ -72,8 +72,8 @@ class MessageProcessor(threading.Thread):
             if recv_data_list:
                 for client_with_message in recv_data_list:
                     try:
-                        self.process_client_message(
-                            receive_message(client_with_message), client_with_message)
+                        self.process_inc_message(
+                            receive_message(client_with_message, SERVER_LOG), client_with_message)
                     except (OSError, json.JSONDecodeError, TypeError) as err:
                         SERVER_LOG.debug(f'Exception when receiving data from client.', exc_info=err)
                         self.remove_client(client_with_message)
@@ -127,14 +127,14 @@ class MessageProcessor(threading.Thread):
         send_message(res, sock, SERVER_LOG)
 
     @Log()
-    def send_contacts(self, sock):
+    def send_contacts(self, username):
         res = {
             JIM.RESPONSE: ResCodes.ACCEPTED,
             JIM.TIME: int(datetime.now().timestamp()),
-            JIM.DATA_LIST: self.db.get_contacts(self._users[sock].username)
+            JIM.DATA_LIST: self.db.get_contacts(username)
         }
 
-        send_message(res, sock, SERVER_LOG)
+        send_message(res, self.names[username], SERVER_LOG)
 
     def process_message(self, message):
         if message[JIM.TO] in self.names and self.names[message[JIM.TO]] in self.listen_sockets:
@@ -185,26 +185,26 @@ class MessageProcessor(threading.Thread):
         # exit
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.EXIT\
-                and JIM.ACCOUNT_NAME in message\
-                and self.names[message[JIM.ACCOUNT_NAME]] == client:
+                and JIM.UserData.ACCOUNT_NAME in message\
+                and self.names[message[JIM.UserData.ACCOUNT_NAME]] == client:
             self.remove_client(client)
 
         # get_contacts
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.GET_CONTACTS\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
             try:
-                self.send_contacts(client)
+                self.send_contacts(message[JIM.USER_LOGIN])
             except OSError:
                 self.remove_client(client)
 
         # add_contact
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.ADD_CONTACT\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
-            self.db.add_contact(message[JIM.USER], message[JIM.USER_ID])
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
+            self.db.add_contact(message[JIM.USER_LOGIN], message[JIM.USER_ID])
             try:
                 send_message(self.form_response(), client, SERVER_LOG)
             except OSError:
@@ -213,9 +213,9 @@ class MessageProcessor(threading.Thread):
         # del_contact
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.DEL_CONTACT\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
-            self.db.del_contact(message[JIM.USER], message[JIM.USER_ID])
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
+            self.db.del_contact(message[JIM.USER_LOGIN], message[JIM.USER_ID])
             try:
                 send_message(self.form_response(), client, SERVER_LOG)
             except OSError:
@@ -224,8 +224,8 @@ class MessageProcessor(threading.Thread):
         # get_users
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.GET_USERS\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
             try:
                 res = self.form_response(ResCodes.ACCEPTED)
                 res[JIM.DATA_LIST] = [item[0] for item in self.db.users_list()]

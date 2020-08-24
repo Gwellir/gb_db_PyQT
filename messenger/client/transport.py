@@ -4,12 +4,16 @@ import time
 from datetime import datetime
 import json
 import threading
+import hashlib
+import hmac
+import binascii
+
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from common.constants import JIM, ResCodes
 from common.decorators import Log
 from common.exceptions import ServerError
-from common.utils import send_message, receive_message
+from common.utils import send_message, receive_message, form_response
 from log.client_log_config import CLIENT_LOG
 
 socket_lock = threading.Lock()
@@ -18,8 +22,9 @@ socket_lock = threading.Lock()
 class ClientTransport(threading.Thread, QObject):
     new_message = pyqtSignal(str)
     connection_lost = pyqtSignal()
+    message_205 = pyqtSignal()
 
-    def __init__(self, port, ip_address, db, username):
+    def __init__(self, port, ip_address, db, username, passwd, keys):
         """Initializes client-server network interface, connects and authenticates with the server.
 
         :type db: :class:`messenger.client.client_database.ClientBase`
@@ -30,7 +35,10 @@ class ClientTransport(threading.Thread, QObject):
 
         self._db = db
         self.username = username
+        self.password = passwd
         self._socket = None
+        self.keys = keys
+        self.pubkey = None
         self.connection_init(port, ip_address)
 
         try:
@@ -69,7 +77,15 @@ class ClientTransport(threading.Thread, QObject):
                 f"Couldn't connect to the server ({ip}:{port}).")
             raise ServerError("Couldn't connect to the server!")
 
-        CLIENT_LOG.debug(f'Connection with server {ip}:{port} established.')
+        CLIENT_LOG.debug(f'Connection with server {ip}:{port} established, starting AUTH process.')
+
+        passwd_bytes = self.password.encode('utf-8')
+        salt = self.username.lower().encode('utf-8')
+        passwd_hash = hashlib.pbkdf2_hmac('sha512', passwd_bytes, salt, 10000)
+        passwd_hash_string = binascii.hexlify(passwd_hash)
+        CLIENT_LOG.debug(f'Passwd hash ready: {passwd_hash_string}')
+
+        self.pubkey = self.keys.publickey().export_key().decode('ascii')
 
         try:
             with socket_lock:
@@ -77,10 +93,22 @@ class ClientTransport(threading.Thread, QObject):
                     self.form_presence_message(),
                     self._socket,
                     CLIENT_LOG)
-                self.process_server_answer(
-                    receive_message(self._socket, CLIENT_LOG))
-        except (OSError, json.JSONDecodeError):
-            CLIENT_LOG.critical(f'Connection lost.')
+                ans = receive_message(self._socket, CLIENT_LOG)
+                if JIM.RESPONSE in ans:
+                    if ans[JIM.RESPONSE] == 400:
+                        raise ServerError(ans[JIM.ERROR])
+                    elif ans[JIM.RESPONSE] == ResCodes.AUTH_PROCESS:
+                        ans_data = ans[JIM.DATA]
+                        hash = hmac.new(passwd_hash_string, ans_data.encode('utf-8'), 'MD5')
+                        digest = hash.digest()
+                        to_send = form_response(ResCodes.AUTH_PROCESS)
+                        to_send[JIM.DATA] = binascii.b2a_base64(digest).decode('ascii')
+                        send_message(to_send, self._socket, CLIENT_LOG)
+                        self.process_server_answer(receive_message(self._socket, CLIENT_LOG))
+                # self.process_server_answer(
+                #     receive_message(self._socket, CLIENT_LOG))
+        except (OSError, json.JSONDecodeError) as err:
+            CLIENT_LOG.critical(f'Connection lost.', exc_info=err)
             raise ServerError('Server connection lost!')
 
         CLIENT_LOG.info('Server received our presence message.')
@@ -126,6 +154,7 @@ class ClientTransport(threading.Thread, QObject):
             JIM.USER: {
                 JIM.UserData.ACCOUNT_NAME: self.username,
                 JIM.UserData.STATUS: status,
+                JIM.UserData.PUBLIC_KEY: self.pubkey,
             },
         }
 
@@ -186,10 +215,14 @@ class ClientTransport(threading.Thread, QObject):
         CLIENT_LOG.debug(f'Parsing server message: {message}')
 
         if JIM.RESPONSE in message:
-            if message[JIM.RESPONSE] == 200:
+            if message[JIM.RESPONSE] == ResCodes.OK:
                 return
-            elif message[JIM.RESPONSE] == 400:
+            elif message[JIM.RESPONSE] == ResCodes.JSON_ERROR:
                 raise ServerError(f'{message[JIM.ERROR]}')
+            elif message[JIM.RESPONSE] == ResCodes.LIST_UPDATE:
+                self.user_list_update()
+                self.contact_list_update()
+                self.message_205.emit()
             else:
                 CLIENT_LOG.debug(
                     f'Unknown response code detected {message[JIM.RESPONSE]}')
@@ -236,6 +269,23 @@ class ClientTransport(threading.Thread, QObject):
             self._db.add_known_users(ans[JIM.DATA_LIST])
         else:
             CLIENT_LOG.error('Failed to update a list of known users!')
+
+    def make_key_request(self, user):
+        CLIENT_LOG.debug(f'Requesting a public key for {user}')
+        req = {
+            JIM.ACTION: JIM.Actions.PUBLIC_KEY_REQUEST,
+            JIM.TIME: int(datetime.now().timestamp()),
+            JIM.USER: {
+                JIM.UserData.ACCOUNT_NAME: user,
+            },
+        }
+        with socket_lock:
+            send_message(req, self._socket, CLIENT_LOG)
+            ans = receive_message(self._socket, CLIENT_LOG)
+        if JIM.RESPONSE in ans and ans[JIM.RESPONSE] == ResCodes.AUTH_PROCESS:
+            return ans[JIM.DATA]
+        else:
+            CLIENT_LOG.error(f"Couldn't retrieve a public key for '{user}'")
 
     def add_contact(self, contact):
         CLIENT_LOG.debug(f'Adding a contact {contact}')
