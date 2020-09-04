@@ -1,5 +1,5 @@
-SERVER_ADDRESS = 'localhost'
-SERVER_PORT = 7777
+DEFAULT_ADDRESS = 'localhost'
+DEFAULT_PORT = 7777
 SERVER_DB_PATH = 'db/'
 SERVER_DB_FILE = 'server_base.db3'
 CLIENT_DB_PREFIX = 'db/client_base'
@@ -12,14 +12,18 @@ TIMEOUT_INTERVAL = 0.2
 
 
 class Status:
+    """Status messages list."""
+
     ONLINE = 'online'
     AFK = 'away'
 
 
 class ResCodes:
+    """Response numeric codes list."""
+
     OK = 200
     ACCEPTED = 202
-    ECHO = 205
+    LIST_UPDATE = 205
     JSON_ERROR = 400
     AUTH_REQUIRED = 401
     AUTH_CREDS = 402
@@ -33,7 +37,7 @@ class ResCodes:
 CODE_MESSAGES = {
     ResCodes.OK: 'OK',
     ResCodes.ACCEPTED: 'Request accepted',
-    ResCodes.ECHO: 'Ping',
+    ResCodes.LIST_UPDATE: 'Update client lists',
     ResCodes.JSON_ERROR: 'Incorrect request',
     ResCodes.AUTH_REQUIRED: 'Authorization required',
     ResCodes.AUTH_CREDS: 'Wrong password',
@@ -41,11 +45,13 @@ CODE_MESSAGES = {
     ResCodes.AUTH_DUPL: 'This user is already connected',
     ResCodes.USER_OFFLINE: 'Target user is offline',
     ResCodes.SERVER_ERROR: 'Server error',
-    ResCodes.AUTH_PROCESS: 'Sending public key'
+    ResCodes.AUTH_PROCESS: 'Auth process message'
 }
 
 
 class JIM:
+    """Main JIM protocol json field list."""
+
     TIME = 'time'
     RESPONSE = 'response'
     ERROR = 'error'
@@ -63,6 +69,8 @@ class JIM:
     DATA = 'bin'
 
     class Actions:
+        """Sublist of actions for ACTION field."""
+
         PRESENCE = 'presence'
         AUTH = 'authenticate'
         JOIN = 'join'
@@ -76,6 +84,9 @@ class JIM:
         PUBLIC_KEY_REQUEST = 'pubkey_need'
 
     class UserData:
+        # todo simplify
+        """Sublist of fields for a possible dict contained in a USER field."""
+
         STATUS = 'status'
         PASSWORD = 'password'
         ACCOUNT_NAME = 'account_name'
@@ -83,9 +94,3 @@ class JIM:
 
     class TypeData:
         STATUS = 'status'
-
-
-class Client:
-    ACC_NAME = 'test'
-    ACC_PASSWORD = '12345678'
-    ACC_STATUS = Status.ONLINE

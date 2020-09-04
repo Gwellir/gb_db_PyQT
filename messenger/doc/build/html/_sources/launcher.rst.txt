@@ -1,0 +1,21 @@
+Launcher script
+===============================================
+
+Launcher is used for testing the server work with a number of different clients.
+
+Usage:
+
+After starting, the launcher will request a command which can be one of the following:
+
+1. s - launch both the server and the clients.
+
+* Default amount of clients to be launched is 2, you will be asked to provide a different amount if needed.
+* Clients will use usernames test1, test2... testN with passwords set to "123456", all these users need to be registered on the server beforehand.
+
+2. x - stop every launched application.
+
+* Closes the server and client windows.
+
+3. q - stop the launcher script.
+
+* Exits the launcher.

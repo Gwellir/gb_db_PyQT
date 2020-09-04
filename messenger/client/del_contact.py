@@ -3,9 +3,15 @@ from PyQt5.QtCore import Qt
 
 
 class DelContactDialog(QDialog):
+    """Client class representing a window for removing a contact from the contact list."""
+
     def __init__(self, database):
+        """DelContactDialog window initialization and description method.
+
+        :type db: `client.client_database.ClientBase`"""
+
         super().__init__()
-        self.database = database
+        self.db = database
 
         self.setFixedSize(350, 120)
         self.setWindowTitle('Delete a contact')
@@ -29,7 +35,7 @@ class DelContactDialog(QDialog):
         self.btn_cancel.move(230, 60)
         self.btn_cancel.clicked.connect(self.close)
 
-        self.selector.addItems(sorted(self.database.get_contacts()))
+        self.selector.addItems(sorted(self.db.get_contacts()))
 
 
 if __name__ == '__main__':

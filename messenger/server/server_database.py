@@ -1,3 +1,5 @@
+from collections import Counter
+
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey, DateTime, UniqueConstraint, \
     or_, Text
 from sqlalchemy.orm import mapper, sessionmaker, aliased
@@ -14,8 +16,8 @@ class ServerBase:
         def __init__(self, username, passwd_hash):
             self.name = username
             self.last_login = datetime.now()
-            # self.passwd_hash = passwd_hash
-            # self.pubkey = None
+            self.passwd_hash = passwd_hash
+            self.pubkey = None
             self.id = None
 
     class ActiveUsers:
@@ -67,8 +69,8 @@ class ServerBase:
                             Column('id', Integer, primary_key=True),
                             Column('name', String, unique=True),
                             Column('last_login', DateTime),
-                            # Column('passwd_hash', String),
-                            # Column('pubkey', Text),
+                            Column('passwd_hash', String),
+                            Column('pubkey', Text),
                             )
 
         active_users_table = Table('active_users', self.metadata,
@@ -117,7 +119,7 @@ class ServerBase:
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
 
-    def on_login(self, username, ip_address, port): #key
+    def on_login(self, username, ip_address, port, key):
         """Stores relevant data for user login.
 
         Adds a new user into Users or finds an existing user and puts them into ActiveUsers.
@@ -127,8 +129,8 @@ class ServerBase:
         if res.count():
             user = res.first()
             user.last_login = datetime.now()
-            # if user.pubkey != key:
-            #     user.pubkey = key
+            if user.pubkey != key:
+                user.pubkey = key
         else:
             raise ValueError(f'User "{username}" is not registered')
 
@@ -149,14 +151,47 @@ class ServerBase:
         self.session.commit()
 
     def get_hash(self, name):
+        """Method for retrieving a stored user's password hash."""
+
         user = self.session.query(self.Users).filter_by(name=name).first()
         return user.passwd_hash
 
     def get_pubkey(self, name):
+        """Method for retrieving a stored user's public key."""
+
         user = self.session.query(self.Users).filter_by(name=name).first()
         return user.pubkey
 
+    def check_user(self, name):
+        """Method for checking whether a user is present within a DB."""
+
+        return self.session.query(self.Users).filter_by(name=name).count()
+
+    def add_user(self, name, passwd_hash):
+        """User registration method."""
+        user_row = self.Users(name, passwd_hash)
+        self.session.add(user_row)
+        self.session.commit()
+        # history_row = self.MessageHistory(user_row.id)
+        # self.session.add(history_row)
+        self.session.commit()
+
+    def remove_user(self, name):
+        """Method for user removal from the DB."""
+        user = self.session.query(self.Users).filter_by(name=name).first()
+        self.session.query(self.ActiveUsers).filter_by(user=user.id).delete()
+        self.session.query(self.LoginHistory).filter_by(user=user.id).delete()
+        self.session.query(self.UserContacts).filter_by(user=user.id).delete()
+        self.session.query(
+            self.UserContacts).filter_by(
+            contact=user.id).delete()
+        self.session.query(self.MessageHistory).filter_by(user=user.id).delete()
+        self.session.query(self.Users).filter_by(name=name).delete()
+        self.session.commit()
+
     def users_list(self):
+        """Method for retrieving a complete user list."""
+
         query = self.session.query(
             self.Users.name,
             self.Users.last_login,
@@ -165,6 +200,8 @@ class ServerBase:
         return query.all()
 
     def active_users_list(self):
+        """Method for retrieving a list of active users."""
+
         query = self.session.query(
             self.Users.name,
             self.ActiveUsers.ip_address,
@@ -175,6 +212,8 @@ class ServerBase:
         return query.all()
 
     def login_history(self, username=None):
+        """Method for retrieving a user's login history."""
+
         query = self.session.query(
             self.Users.name,
             self.LoginHistory.login_time,
@@ -188,6 +227,8 @@ class ServerBase:
         return query.all()
 
     def add_contact(self, user_name, contact_name):
+        """Method for adding a new contact info for user."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
         contact = self.session.query(self.Users).filter_by(name=contact_name).first()
 
@@ -202,6 +243,8 @@ class ServerBase:
         return True
 
     def del_contact(self, user_name, contact_name):
+        """Method for removing a user from another user's contacts list."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
         contact = self.session.query(self.Users).filter_by(name=contact_name).first()
 
@@ -216,6 +259,8 @@ class ServerBase:
         return True
 
     def get_contacts(self, user_name):
+        """Method for retrieving a user's contact list from DB."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).one()
 
         contact_list = self.session.query(self.Users.name) \
@@ -226,6 +271,8 @@ class ServerBase:
         return [contact[0] for contact in contact_list]
 
     def store_message(self, sender_name, recipient_name, content):
+        """Method for storing a new message in the DB."""
+
         sender = self.session.query(self.Users).filter_by(name=sender_name).first()
         recipient = self.session.query(self.Users).filter_by(name=recipient_name).first()
 
@@ -235,6 +282,8 @@ class ServerBase:
             self.session.commit()
 
     def get_user_message_history(self, user_name):
+        """Method for retrieving a user's message history."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
 
         senders = aliased(self.Users)
@@ -261,7 +310,24 @@ class ServerBase:
 
         return messages
 
+    def get_message_stats(self):
+        history = self.get_full_message_history()
+        stats_out = Counter()
+        stats_in = Counter()
+        user_set = set()
+        for row in history:
+            stats_out[row[0]] += 1
+            stats_in[row[1]] += 1
+            user_set.add(row[0])
+            user_set.add(row[1])
+        res = [[user, stats_out[user], stats_in[user]] for user in user_set]
+
+        return res
+
+
     def get_full_message_history(self):
+        """Method for retrieving a complete message history for all users."""
+
         senders = aliased(self.Users)
         recipients = aliased(self.Users)
         message_list = self.session.query(

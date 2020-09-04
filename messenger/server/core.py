@@ -8,8 +8,7 @@ import os
 from datetime import datetime
 
 from common.constants import JIM, MAX_CLIENTS, ResCodes, CODE_MESSAGES
-from common.descr import PortNumber
-# from common.constants import
+from common.descriptors import PortNumber
 from log.server_log_config import SERVER_LOG
 from common.utils import send_message, receive_message
 from common.decorators import login_required, Log
@@ -72,13 +71,17 @@ class MessageProcessor(threading.Thread):
             if recv_data_list:
                 for client_with_message in recv_data_list:
                     try:
-                        self.process_client_message(
-                            receive_message(client_with_message), client_with_message)
+                        self.process_inc_message(
+                            receive_message(client_with_message, SERVER_LOG), client_with_message)
                     except (OSError, json.JSONDecodeError, TypeError) as err:
-                        SERVER_LOG.debug(f'Exception when receiving data from client.', exc_info=err)
+                        SERVER_LOG.debug('Exception when receiving data from client.', exc_info=err)
                         self.remove_client(client_with_message)
 
     def remove_client(self, client):
+        """Method for disconnecting a client.
+
+        Closes a socket, stores info in the DB and removes a socket object from connected clients list."""
+
         SERVER_LOG.info(f'Client {client.getpeername()} has disconnected.')
         # todo optimize
         for name in self.names:
@@ -90,6 +93,8 @@ class MessageProcessor(threading.Thread):
         client.close()
 
     def init_socket(self):
+        """Method for listen socket initialization."""
+
         SERVER_LOG.info(f'Server started, address: {self.addr}:{self.port}')
         # socket setup
         transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -118,6 +123,8 @@ class MessageProcessor(threading.Thread):
         return response_obj
 
     def send_userlist(self, sock):
+        """Method for sending a userlist to a client's socket."""
+
         res = {
             JIM.RESPONSE: ResCodes.ACCEPTED,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -127,16 +134,20 @@ class MessageProcessor(threading.Thread):
         send_message(res, sock, SERVER_LOG)
 
     @Log()
-    def send_contacts(self, sock):
+    def send_contacts(self, username):
+        """Method for sending a list of contacts to the client."""
+
         res = {
             JIM.RESPONSE: ResCodes.ACCEPTED,
             JIM.TIME: int(datetime.now().timestamp()),
-            JIM.DATA_LIST: self.db.get_contacts(self._users[sock].username)
+            JIM.DATA_LIST: self.db.get_contacts(username)
         }
 
-        send_message(res, sock, SERVER_LOG)
+        send_message(res, self.names[username], SERVER_LOG)
 
     def process_message(self, message):
+        """Method for passing client messages to other clients."""
+
         if message[JIM.TO] in self.names and self.names[message[JIM.TO]] in self.listen_sockets:
             try:
                 send_message(message, self.names[message[JIM.TO]], SERVER_LOG)
@@ -152,6 +163,8 @@ class MessageProcessor(threading.Thread):
 
     @login_required
     def process_inc_message(self, message, client):
+        """Main method for incoming messages processing."""
+
         SERVER_LOG.debug(f'Parsing client message: {message}')
         # presence message case
         if      JIM.ACTION in message\
@@ -185,26 +198,26 @@ class MessageProcessor(threading.Thread):
         # exit
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.EXIT\
-                and JIM.ACCOUNT_NAME in message\
-                and self.names[message[JIM.ACCOUNT_NAME]] == client:
+                and JIM.UserData.ACCOUNT_NAME in message\
+                and self.names[message[JIM.UserData.ACCOUNT_NAME]] == client:
             self.remove_client(client)
 
         # get_contacts
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.GET_CONTACTS\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
             try:
-                self.send_contacts(client)
+                self.send_contacts(message[JIM.USER_LOGIN])
             except OSError:
                 self.remove_client(client)
 
         # add_contact
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.ADD_CONTACT\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
-            self.db.add_contact(message[JIM.USER], message[JIM.USER_ID])
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
+            self.db.add_contact(message[JIM.USER_LOGIN], message[JIM.USER_ID])
             try:
                 send_message(self.form_response(), client, SERVER_LOG)
             except OSError:
@@ -213,9 +226,9 @@ class MessageProcessor(threading.Thread):
         # del_contact
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.DEL_CONTACT\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
-            self.db.del_contact(message[JIM.USER], message[JIM.USER_ID])
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
+            self.db.del_contact(message[JIM.USER_LOGIN], message[JIM.USER_ID])
             try:
                 send_message(self.form_response(), client, SERVER_LOG)
             except OSError:
@@ -224,8 +237,8 @@ class MessageProcessor(threading.Thread):
         # get_users
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.GET_USERS\
-                and JIM.USER in message\
-                and self.names[message[JIM.USER]] == client:
+                and JIM.USER_LOGIN in message\
+                and self.names[message[JIM.USER_LOGIN]] == client:
             try:
                 res = self.form_response(ResCodes.ACCEPTED)
                 res[JIM.DATA_LIST] = [item[0] for item in self.db.users_list()]
@@ -236,8 +249,9 @@ class MessageProcessor(threading.Thread):
         # public_key_request
         elif    JIM.ACTION in message\
                 and message[JIM.ACTION] == JIM.Actions.PUBLIC_KEY_REQUEST\
-                and JIM.USER in message:
-            pubkey = self.db.get_pubkey(message[JIM.USER])
+                and JIM.USER in message\
+                and JIM.UserData.ACCOUNT_NAME in message[JIM.USER]:
+            pubkey = self.db.get_pubkey(message[JIM.USER][JIM.UserData.ACCOUNT_NAME])
             if pubkey:
                 try:
                     res = self.form_response(ResCodes.AUTH_PROCESS)
@@ -259,6 +273,11 @@ class MessageProcessor(threading.Thread):
                 self.remove_client(client)
 
     def authorize_user(self, message, sock):
+        """Method for performing an authorization process.
+
+        Checks whether a user is already logged in, checks for password validity and finally adds a client to the
+        list of connected sockets."""
+
         SERVER_LOG.debug(f'Started authentication process for {message[JIM.USER]}')
         # if name taken -> error
         if message[JIM.USER][JIM.UserData.ACCOUNT_NAME] in self.names.keys():
@@ -329,6 +348,7 @@ class MessageProcessor(threading.Thread):
 
     def service_update_lists(self):
         """Method for sending response 205 (update user lists) to all clients."""
+
         res = self.form_response(205)
         for client in self.names:
             try:
