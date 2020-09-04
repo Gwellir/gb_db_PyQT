@@ -9,15 +9,15 @@ from client.client_database import ClientBase
 from client.main_window import ClientMainWindow
 from client.start_dialog import UserNameDialog
 from client.transport import ClientTransport
-from common.constants import (Client, MIN_PORT_NUMBER, MAX_PORT_NUMBER, JIM, DEFAULT_ADDRESS, DEFAULT_PORT)
-from common.exceptions import NoAddressGivenError, PortOutOfRangeError, ServerError
-from common.utils import parse_cli_flags, send_message, receive_message
+from common.constants import (MIN_PORT_NUMBER, MAX_PORT_NUMBER, DEFAULT_ADDRESS, DEFAULT_PORT)
+from common.exceptions import ServerError
 from log.client_log_config import CLIENT_LOG
 from common.decorators import Log
 
 
 def arg_parser():
     """ CLI parameters parser.
+
     Returns address, port (validated), username, password for user
     """
     parser = argparse.ArgumentParser()
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     del init_dialog
 
-    window = ClientMainWindow(db, transport)
+    window = ClientMainWindow(db, transport, keys)
     window.make_connection(transport)
     window.statusBar().showMessage('Connected to TEST server')
     app.exec_()

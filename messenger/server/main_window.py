@@ -2,7 +2,7 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QLabel, QTableView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QTimer
-from server.stat_window import StatWindow
+from server.history_window import HistoryWindow
 from server.config_window import ConfigWindow
 from server.add_user import RegisterUser
 from server.remove_user import DelUserDialog
@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
 
     def create_users_model(self):
         """Active users table filling method."""
+
         list_users = self.db.active_users_list()
         list = QStandardItemModel()
         list.setHorizontalHeaderLabels(
@@ -99,24 +100,28 @@ class MainWindow(QMainWindow):
 
     def show_statistics(self):
         """Client statistics window creator method."""
+
         global stat_window
-        stat_window = StatWindow(self.db)
+        stat_window = HistoryWindow(self.db)
         stat_window.show()
 
     def server_config(self):
         """Server preferences window creator method."""
+
         global config_window
         # initializing window with current parameters
         config_window = ConfigWindow(self.config)
 
     def reg_user(self):
         """User registration window creator method."""
+
         global reg_window
         reg_window = RegisterUser(self.db, self.server_thread)
         reg_window.show()
 
     def rem_user(self):
         """User removal window creator method."""
+
         global rem_window
         rem_window = DelUserDialog(self.db, self.server_thread)
         rem_window.show()

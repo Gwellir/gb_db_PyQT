@@ -12,7 +12,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
+    """Main client window visual representation class"""
+
     def setupUi(self, MainWindow):
+        """Method for initializing a client main window elements setup."""
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(803, 600)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)

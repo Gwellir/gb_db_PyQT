@@ -20,7 +20,9 @@ socket_lock = threading.Lock()
 
 
 class ClientTransport(threading.Thread, QObject):
-    new_message = pyqtSignal(str)
+    """Primary client-server interaction logic client-side class."""
+
+    new_message = pyqtSignal(dict)
     connection_lost = pyqtSignal()
     message_205 = pyqtSignal()
 
@@ -46,16 +48,20 @@ class ClientTransport(threading.Thread, QObject):
             self.contact_list_update()
         except OSError as err:
             if err.errno:
-                CLIENT_LOG.critical(f'Connection lost.')
+                CLIENT_LOG.critical('Connection lost.')
                 raise ServerError('Server connection lost!')
             CLIENT_LOG.error('Timed out while updating user lists!')
         except json.JSONDecodeError:
-            CLIENT_LOG.critical(f'Connection lost.')
+            CLIENT_LOG.critical('Connection lost.')
             raise ServerError('Server connection lost!')
 
         self.running = True
 
     def connection_init(self, port, ip):
+        """Method for starting a server connection.
+
+        Opens socket, connects to the server over network, performs handshake and authorization."""
+
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self._socket.settimeout(5)
@@ -108,12 +114,14 @@ class ClientTransport(threading.Thread, QObject):
                 # self.process_server_answer(
                 #     receive_message(self._socket, CLIENT_LOG))
         except (OSError, json.JSONDecodeError) as err:
-            CLIENT_LOG.critical(f'Connection lost.', exc_info=err)
+            CLIENT_LOG.critical('Connection lost.', exc_info=err)
             raise ServerError('Server connection lost!')
 
         CLIENT_LOG.info('Server received our presence message.')
 
     def form_contacts_request(self):
+        """Method for forming a client contacts request."""
+
         req_obj = {
             JIM.ACTION: JIM.Actions.GET_CONTACTS,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -124,6 +132,8 @@ class ClientTransport(threading.Thread, QObject):
         return req_obj
 
     def form_users_request(self):
+        """Method for forming a server users request."""
+
         req_obj = {
             JIM.ACTION: JIM.Actions.GET_USERS,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -134,6 +144,8 @@ class ClientTransport(threading.Thread, QObject):
         return req_obj
 
     def form_auth_message(self, acc_password):
+        """Method for forming an authentication request."""
+
         auth_obj = {
             JIM.ACTION: JIM.Actions.AUTH,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -147,6 +159,8 @@ class ClientTransport(threading.Thread, QObject):
         return auth_obj
 
     def form_presence_message(self, status='Online'):
+        """Method for forming a client presence message."""
+
         presence_obj = {
             JIM.ACTION: JIM.Actions.PRESENCE,
             JIM.TIME: int(datetime.timestamp(datetime.now())),
@@ -162,6 +176,10 @@ class ClientTransport(threading.Thread, QObject):
         return presence_obj
 
     def form_join_message(self, chat):
+        """Method for forming a chat join request.
+
+        (unused for now)"""
+
         if chat[0] != '#':
             return None
         join_obj = {
@@ -175,6 +193,8 @@ class ClientTransport(threading.Thread, QObject):
         return join_obj
 
     def form_edit_contact_message(self, contact_name, op='/add'):
+        """Method for forming an add/remove contact request."""
+
         op_value = JIM.Actions.ADD_CONTACT\
             if op == '/add'\
             else JIM.Actions.DEL_CONTACT
@@ -190,6 +210,8 @@ class ClientTransport(threading.Thread, QObject):
         return edit_obj
 
     def form_exit_message(self):
+        """Method for forming an exit request."""
+
         exit_obj = {
             JIM.ACTION: JIM.Actions.EXIT,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -199,6 +221,8 @@ class ClientTransport(threading.Thread, QObject):
         return exit_obj
 
     def form_text_message(self, destination, content):
+        """Method for forming a client-to-client text message."""
+
         message_obj = {
             JIM.ACTION: JIM.Actions.MESSAGE,
             JIM.TIME: int(datetime.now().timestamp()),
@@ -212,6 +236,8 @@ class ClientTransport(threading.Thread, QObject):
         return message_obj
 
     def process_server_answer(self, message):
+        """Method for checking a server answer and performing corresponding actions."""
+
         CLIENT_LOG.debug(f'Parsing server message: {message}')
 
         if JIM.RESPONSE in message:
@@ -235,11 +261,11 @@ class ClientTransport(threading.Thread, QObject):
                 and message[JIM.TO] == self.username:
             CLIENT_LOG.debug(
                 f'Got a message from user - {message[JIM.FROM]}:{message[JIM.MESSAGE]}')
-            self._db.store_message(
-                message[JIM.FROM], message[JIM.MESSAGE], outgoing=False)
-            self.new_message.emit(message[JIM.FROM])
+            self.new_message.emit(message)
 
     def contact_list_update(self):
+        """Method for performing a contact list update."""
+
         CLIENT_LOG.debug(
             f'Requesting contact list for the user {self.username}')
         req = self.form_contacts_request()
@@ -256,6 +282,8 @@ class ClientTransport(threading.Thread, QObject):
             CLIENT_LOG.error('Failed to update a contact list!')
 
     def user_list_update(self):
+        """Method for performing a user list update."""
+
         CLIENT_LOG.debug(
             f'Requesting a list of known users for {self.username}')
         req = self.form_users_request()
@@ -271,6 +299,8 @@ class ClientTransport(threading.Thread, QObject):
             CLIENT_LOG.error('Failed to update a list of known users!')
 
     def make_key_request(self, user):
+        """Method for performing a public key request"""
+
         CLIENT_LOG.debug(f'Requesting a public key for {user}')
         req = {
             JIM.ACTION: JIM.Actions.PUBLIC_KEY_REQUEST,
@@ -288,6 +318,8 @@ class ClientTransport(threading.Thread, QObject):
             CLIENT_LOG.error(f"Couldn't retrieve a public key for '{user}'")
 
     def add_contact(self, contact):
+        """Method for informing a server about adding a contact."""
+
         CLIENT_LOG.debug(f'Adding a contact {contact}')
         req = self.form_edit_contact_message(contact, op='/add')
 
@@ -298,6 +330,8 @@ class ClientTransport(threading.Thread, QObject):
                     self._socket, CLIENT_LOG))
 
     def del_contact(self, contact):
+        """Method for informing a server about contact removal."""
+
         CLIENT_LOG.debug(f'Removing a contact {contact}')
         req = self.form_edit_contact_message(contact, op='/del')
 
@@ -308,6 +342,8 @@ class ClientTransport(threading.Thread, QObject):
                     self._socket, CLIENT_LOG))
 
     def transport_shutdown(self):
+        """Method for informing a server about a client shutdown."""
+
         self.running = False
         req = self.form_exit_message()
 
@@ -321,6 +357,8 @@ class ClientTransport(threading.Thread, QObject):
         time.sleep(0.5)
 
     def send_message(self, to, content):
+        """Method for forming a text message to be sent to a target user."""
+
         req = self.form_text_message(to, content)
 
         with socket_lock:
@@ -331,6 +369,10 @@ class ClientTransport(threading.Thread, QObject):
             CLIENT_LOG.info(f'Sent a message to the user {to}')
 
     def run(self):
+        """Main client transport cycle thread method.
+
+        Receives incoming messages, passes them to the processing method and watches over the server connection."""
+
         CLIENT_LOG.debug('Server message transport launched.')
         while self.running:
             time.sleep(1)
@@ -340,10 +382,11 @@ class ClientTransport(threading.Thread, QObject):
                     message = receive_message(self._socket, CLIENT_LOG)
                 except OSError as err:
                     if err.errno:
-                        CLIENT_LOG.critical(f'Lost connection to the server!')
+                        CLIENT_LOG.critical('Lost connection to the server!')
                         self.running = False
                         self.connection_lost.emit()
-                except (ConnectionError, ConnectionResetError, ConnectionAbortedError, json.JSONDecodeError, TypeError) as err:
+                except (ConnectionError, ConnectionResetError, ConnectionAbortedError, json.JSONDecodeError,
+                        TypeError):
                     CLIENT_LOG.critical('Lost connection to the server!')
                     self.running = False
                     self.connection_lost.emit()

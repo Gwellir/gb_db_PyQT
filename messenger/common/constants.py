@@ -12,11 +12,15 @@ TIMEOUT_INTERVAL = 0.2
 
 
 class Status:
+    """Status messages list."""
+
     ONLINE = 'online'
     AFK = 'away'
 
 
 class ResCodes:
+    """Response numeric codes list."""
+
     OK = 200
     ACCEPTED = 202
     LIST_UPDATE = 205
@@ -46,6 +50,8 @@ CODE_MESSAGES = {
 
 
 class JIM:
+    """Main JIM protocol json field list."""
+
     TIME = 'time'
     RESPONSE = 'response'
     ERROR = 'error'
@@ -63,6 +69,8 @@ class JIM:
     DATA = 'bin'
 
     class Actions:
+        """Sublist of actions for ACTION field."""
+
         PRESENCE = 'presence'
         AUTH = 'authenticate'
         JOIN = 'join'
@@ -76,6 +84,9 @@ class JIM:
         PUBLIC_KEY_REQUEST = 'pubkey_need'
 
     class UserData:
+        # todo simplify
+        """Sublist of fields for a possible dict contained in a USER field."""
+
         STATUS = 'status'
         PASSWORD = 'password'
         ACCOUNT_NAME = 'account_name'
@@ -83,9 +94,3 @@ class JIM:
 
     class TypeData:
         STATUS = 'status'
-
-
-class Client:
-    ACC_NAME = 'test'
-    ACC_PASSWORD = '12345678'
-    ACC_STATUS = Status.ONLINE

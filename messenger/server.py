@@ -1,34 +1,22 @@
 import configparser
-import select
 import sys
 import os
 import argparse
-from collections import defaultdict
-from json import JSONDecodeError
-from socket import SOCK_STREAM, socket, AF_INET
-from datetime import datetime
-from threading import Thread, Lock
-from PyQt5.QtWidgets import QApplication, QMessageBox
-from PyQt5.QtCore import Qt, QTimer
+from threading import Lock
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 
-from common.constants import (ResCodes, CODE_MESSAGES, JIM, MAX_CLIENTS,
-                              TIMEOUT_INTERVAL, DEFAULT_PORT)
-from common.utils import send_message, receive_message, form_response
+from common.constants import DEFAULT_PORT
 from log.server_log_config import SERVER_LOG
-from common.decorators import Log
-from common.descr import PortNumber
-from meta import ServerWatcher
 from server.core import MessageProcessor
 from server.server_database import ServerBase
-# from server.server_gui import MainWindow, gui_create_model, create_history_model, HistoryWindow, ConfigWindow
 from server.main_window import MainWindow
 
-conn_change = False
-conflag_lock = Lock()
 
 # @log
 def arg_parser(default_port, default_address):
     """Server CLI arguments parser."""
+
     SERVER_LOG.debug(
         f'Parsing CLI arguments: {sys.argv}')
     parser = argparse.ArgumentParser()
@@ -46,6 +34,7 @@ def arg_parser(default_port, default_address):
 # @Log
 def config_load():
     """Config file parser."""
+
     config = configparser.ConfigParser()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config.read(f'{dir_path}/{"server.ini"}')
@@ -62,6 +51,9 @@ def config_load():
 
 
 def main():
+    """Main server method.
+
+    Loads the settings, starts network part in the background and then opens the main window."""
 
     config = config_load()
 
@@ -86,22 +78,6 @@ def main():
         server_app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
         main_window = MainWindow(db, server, config)
 
-        # main_window init
-        # main_window.statusBar().showMessage('Server is online')
-        # main_window.clients_table.setModel(gui_create_model(db))
-        # main_window.clients_table.resizeColumnsToContents()
-        # main_window.clients_table.resizeRowsToContents()
-        #
-        # # binding buttons to functions
-        # main_window.refresh_btn.triggered.connect(list_update)
-        # main_window.show_history_btn.triggered.connect(show_statistics)
-        # main_window.config_btn.triggered.connect(server_config)
-        #
-        # timer = QTimer()
-        # timer.timeout.connect(list_update)
-        # timer.start(1000)
-
-        # GUI start
         server_app.exec_()
         server.running = False
 

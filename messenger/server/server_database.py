@@ -1,3 +1,5 @@
+from collections import Counter
+
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey, DateTime, UniqueConstraint, \
     or_, Text
 from sqlalchemy.orm import mapper, sessionmaker, aliased
@@ -149,21 +151,24 @@ class ServerBase:
         self.session.commit()
 
     def get_hash(self, name):
+        """Method for retrieving a stored user's password hash."""
+
         user = self.session.query(self.Users).filter_by(name=name).first()
         return user.passwd_hash
 
     def get_pubkey(self, name):
+        """Method for retrieving a stored user's public key."""
+
         user = self.session.query(self.Users).filter_by(name=name).first()
         return user.pubkey
 
     def check_user(self, name):
+        """Method for checking whether a user is present within a DB."""
+
         return self.session.query(self.Users).filter_by(name=name).count()
 
     def add_user(self, name, passwd_hash):
-        """
-        Метод регистрации пользователя.
-        Принимает имя и хэш пароля, создаёт запись в таблице статистики.
-        """
+        """User registration method."""
         user_row = self.Users(name, passwd_hash)
         self.session.add(user_row)
         self.session.commit()
@@ -172,7 +177,7 @@ class ServerBase:
         self.session.commit()
 
     def remove_user(self, name):
-        """Метод удаляющий пользователя из базы."""
+        """Method for user removal from the DB."""
         user = self.session.query(self.Users).filter_by(name=name).first()
         self.session.query(self.ActiveUsers).filter_by(user=user.id).delete()
         self.session.query(self.LoginHistory).filter_by(user=user.id).delete()
@@ -185,6 +190,8 @@ class ServerBase:
         self.session.commit()
 
     def users_list(self):
+        """Method for retrieving a complete user list."""
+
         query = self.session.query(
             self.Users.name,
             self.Users.last_login,
@@ -193,6 +200,8 @@ class ServerBase:
         return query.all()
 
     def active_users_list(self):
+        """Method for retrieving a list of active users."""
+
         query = self.session.query(
             self.Users.name,
             self.ActiveUsers.ip_address,
@@ -203,6 +212,8 @@ class ServerBase:
         return query.all()
 
     def login_history(self, username=None):
+        """Method for retrieving a user's login history."""
+
         query = self.session.query(
             self.Users.name,
             self.LoginHistory.login_time,
@@ -216,6 +227,8 @@ class ServerBase:
         return query.all()
 
     def add_contact(self, user_name, contact_name):
+        """Method for adding a new contact info for user."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
         contact = self.session.query(self.Users).filter_by(name=contact_name).first()
 
@@ -230,6 +243,8 @@ class ServerBase:
         return True
 
     def del_contact(self, user_name, contact_name):
+        """Method for removing a user from another user's contacts list."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
         contact = self.session.query(self.Users).filter_by(name=contact_name).first()
 
@@ -244,6 +259,8 @@ class ServerBase:
         return True
 
     def get_contacts(self, user_name):
+        """Method for retrieving a user's contact list from DB."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).one()
 
         contact_list = self.session.query(self.Users.name) \
@@ -254,6 +271,8 @@ class ServerBase:
         return [contact[0] for contact in contact_list]
 
     def store_message(self, sender_name, recipient_name, content):
+        """Method for storing a new message in the DB."""
+
         sender = self.session.query(self.Users).filter_by(name=sender_name).first()
         recipient = self.session.query(self.Users).filter_by(name=recipient_name).first()
 
@@ -263,6 +282,8 @@ class ServerBase:
             self.session.commit()
 
     def get_user_message_history(self, user_name):
+        """Method for retrieving a user's message history."""
+
         user = self.session.query(self.Users).filter_by(name=user_name).first()
 
         senders = aliased(self.Users)
@@ -289,7 +310,24 @@ class ServerBase:
 
         return messages
 
+    def get_message_stats(self):
+        history = self.get_full_message_history()
+        stats_out = Counter()
+        stats_in = Counter()
+        user_set = set()
+        for row in history:
+            stats_out[row[0]] += 1
+            stats_in[row[1]] += 1
+            user_set.add(row[0])
+            user_set.add(row[1])
+        res = [[user, stats_out[user], stats_in[user]] for user in user_set]
+
+        return res
+
+
     def get_full_message_history(self):
+        """Method for retrieving a complete message history for all users."""
+
         senders = aliased(self.Users)
         recipients = aliased(self.Users)
         message_list = self.session.query(

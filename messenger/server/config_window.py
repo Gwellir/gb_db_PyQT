@@ -79,6 +79,7 @@ class ConfigWindow(QDialog):
 
     def open_file_dialog(self):
         """Path selection method."""
+
         global dialog
         dialog = QFileDialog(self)
         path = dialog.getExistingDirectory()
@@ -92,6 +93,7 @@ class ConfigWindow(QDialog):
 
         Validates settings and stores them to a config file.
         """
+
         global config_window
         message = QMessageBox()
         self.config['SETTINGS']['Database_path'] = self.db_path.text()

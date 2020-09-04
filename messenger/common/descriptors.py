@@ -11,6 +11,7 @@ class PortNumber:
 
     def __set__(self, instance, value):
         """Check whether a port number lies within range of publicly accessible port numbers."""
+
         # print(instance)
         logger = SERVER_LOG
         if not MIN_PORT_NUMBER <= value <= MAX_PORT_NUMBER:
@@ -22,6 +23,7 @@ class PortNumber:
         self.name = name
 
 
+# not used
 class IPAddress:
     """Descriptor for valid server ip address."""
 

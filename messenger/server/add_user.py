@@ -56,8 +56,7 @@ class RegisterUser(QDialog):
         self.show()
 
     def save_data(self):
-        """ Method for validating a new user and saving data to the DB.
-        """
+        """ Method for validating a new user and saving data to the DB."""
         if not self.client_name.text():
             self.messages.critical(
                 self, 'Error', 'No username provided.')
